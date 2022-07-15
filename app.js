@@ -1,8 +1,9 @@
-const express = require('express')
+const express      = require('express')
 var expressLayouts = require('express-ejs-layouts');
-var morgan = require('morgan')
-const app = express()
-const port = 3000
+var morgan         = require('morgan')
+const contacts     = require('./data/contact.js');
+const app          = express()
+const port         = 3000
 
 //menjalankan morgan
 app.use(morgan('dev'))
@@ -23,30 +24,12 @@ app.use((req, res, next) => {
 })
 
 
-
-
 //untuk halaman index
 app.get('/', (req, res) => {
-  cont = [
-    {
-      name :'ESP',
-      email:'esp@gmail.com',
-    },
-    {
-      name :'eldra',
-      email:'eldra@gmail.com',
-    },
-    {
-      name :'surya',
-      email:'surya@gmail.com',
-    },
-  ]
-  //mengirimkan data ke index
   res.render('index',
   {
     nama:'Eldra Surya P',
     title:'WebServer EJS',
-    cont,
   })
 })
 
@@ -59,7 +42,12 @@ app.get('/about', (req, res) => {
 
 //untuk halaman contact
 app.get('/contact', (req, res) => {
-     res.render('contact',{ title:'Contact Page'})
+    //mengambil data dari json lalu mengirimkan datanya ke contact
+     cont = contacts.listContact()
+     res.render('contact',{ 
+      title:'Contact Page',
+      cont,
+    })
 })
 
 app.get('/product/:id', (req, res) => {

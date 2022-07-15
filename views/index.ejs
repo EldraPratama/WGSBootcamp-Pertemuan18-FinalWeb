@@ -2,17 +2,4 @@
     <h1>Hello world</h1>
     <p>Welcome to my page <%= nama %></p>
  
-    <!-- menampilkan contact list -->
-    <h3>Contact List</h3>
-    <% if (cont.length == 0) { %>
-        <b>Contact kosong</b>
-    <% }else{ %>  
-        <% cont.forEach( (con,index) => { %>
-            <ul>
-                <i>Kontak ke - <%= index+1 %></i>
-                <li>Nama :<%= con.name %> </li>
-                <li>Email:<%= con.email %> </li>
-            </ul>
-        <% }) %>
-    <% } %> 
  
