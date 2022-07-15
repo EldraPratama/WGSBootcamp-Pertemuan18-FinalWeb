@@ -58,22 +58,12 @@ const listContact = () => {
 
 //fungsi melihat detail contact
 const detailContact = (name) => {
-    // variabel found untuk mengecek ada tidaknya nama yang dicari
-    let found = 0 
+    
     const contacts = loadContact()
-    console.log('Contact detail:')
-    contacts.forEach((contact,i) => {
-        if (name.toLowerCase() == contact.name.toLowerCase()) {
-            console.log(`Name  : ${contact.name}`);          
-            console.log(`Number: ${contact.phone}`);          
-            if (contact.email) {
-                console.log(`Email : ${contact.email}`); 
-            }   
-            found ++        
-        }
-    });
-
-    cekPencarian(found,name)
+    const detail = contacts.find(contact=>contact.name===name)
+    
+    console.log(detail);
+    return detail
 
 }
 

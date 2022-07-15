@@ -40,16 +40,26 @@ app.get('/about', (req, res) => {
 
 })
 
+
 //untuk halaman contact
 app.get('/contact', (req, res) => {
-    //mengambil data dari json lalu mengirimkan datanya ke contact
-     cont = contacts.listContact()
+  //mengambil data dari json lalu mengirimkan datanya ke contact
+  cont = contacts.listContact()
      res.render('contact',{ 
-      title:'Contact Page',
-      cont,
+       title:'Contact Page',
+       cont,
     })
-})
-
+  })
+  
+app.get('/contact/:name', (req, res) => {
+      //mengambil data dari json lalu mengirimkan datanya ke contact
+       cont = contacts.detailContact( req.params.name )
+       res.render('detailContact',{ 
+        title:'Contact Page',
+        cont,
+      })
+  })
+  
 app.get('/product/:id', (req, res) => {
     res.send(`product id: ${req.params.id} <br> category id : ${ req.query.category}`)
 })
