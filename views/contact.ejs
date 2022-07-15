@@ -3,23 +3,37 @@
     <h1>Hello to Contact</h1>
     <p>this is Contact page</p>
 
-        <!-- menampilkan contact list -->
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h3>Contact List</h3>
-                    <% if (cont.length == 0) { %>
-                        <b>Contact kosong</b>
-                    <% }else{ %>  
-                        <% cont.forEach( (con,index) => { %>
-                            <ul>
-                                <i>Kontak ke - <%= index+1 %></i>
-                                <li>Nama :<%= con.name %> </li>
-                                <li>Email:<%= con.email %> </li>
-                            </ul>
-                        <% }) %>
-                    <% } %> 
-                </div>
+
+    <h3>Contact List</h3>
+    <!-- menampilkan contact list -->
+    <div class="container">
+        <div class="row">
+            <div class="col">
+
+                <table class="table table-striped table-success">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (cont.length == 0) { %>
+                            <tr><td colspan="3"><b>Contact masih kosong</b></td></tr>
+                        <% }else{ %>  
+                            <% cont.forEach( (con,index) => { %>
+                                <tr>
+                                    <td><%= index+1 %></td>
+                                    <td><%= con.name %> </td>
+                                    <td><%= con.email %> </td>                    
+                                </tr>
+                            <% }) %>
+                        <% } %> 
+                    </tbody>
+                </table>
+                   
             </div>
         </div>
+    </div>
 
