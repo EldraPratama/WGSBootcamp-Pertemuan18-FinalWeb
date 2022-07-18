@@ -21,19 +21,11 @@ const loadContact = () => {
 }
 
 //Menyimpan inputan
-const SaveContact = (name,email,phone)=>{
-    const contact  = {name,email,phone};
+const SaveContact = (dataInput)=>{
+    const contact  = dataInput;
     const contacts = loadContact()
     contacts.push(contact);
-
-    //validasi email dan no hp
-    if (email) {
-        cekEmail(email)
-    }
-    if (phone) {
-        cekNomer(phone)
-    }
-   
+ 
     //Mengecek data duplicate 
     let duplicate = 0
     for (let i = 0; i < contacts.length ;i++){
@@ -47,7 +39,19 @@ const SaveContact = (name,email,phone)=>{
         fs.writeFileSync('data/contacts.json',JSON.stringify(contacts));
         console.log('Terima Kasih sudah memasukkan data');
     }
- 
+}
+
+//fungsi mengecek data duplikat
+const cekDuplikat = (name) => {
+    const contacts = loadContact()
+    return contacts.find((contact) => contact.name === name)
+}
+
+//fungsi mencari kontak
+const findContact = (name) => {
+    const contacts = loadContact()
+    const contact = contacts.find((contact) => contact.name.toLowerCase() === name.toLowerCase())
+    return contact
 }
 
 //fungsi melihat daftar contact
@@ -73,7 +77,7 @@ const deleteContact = (name) => {
     let found = 0 
     const contacts = loadContact()
     contacts.forEach((contact,i) => {
-        if (contact.name.toLowerCase() == name.toLowerCase() ) {
+        if (contact.name == name ) {
             contacts.splice(i,1)
             fs.writeFileSync('data/contacts.json',JSON.stringify(contacts));
             console.log("Data contact berhasil di hapus");
@@ -86,55 +90,20 @@ const deleteContact = (name) => {
 
 
 // fungsi mengupdate contact
-const updateContact = (name,new_name,email,phone) => {
-    // variabel found untuk mengecek ada tidaknya nama yang dicari
-    let found = 0 
+const updateContact = (dataUpdate) => {
     const contacts = loadContact()
-    contacts.forEach((contact,i) => {
-        if (contact.name.toLowerCase() == name.toLowerCase() ) {
-           if (email) {
-               cekEmail(email)
-           }
-           if (phone) {
-               cekNomer(phone)
-           }
-           
-           if (new_name) {contacts[i].name   = new_name}
-           if (email)    {contacts[i].email  = email}
-           if (phone)    {contacts[i].phone  = phone}
-           
-           //    new_name ? contacts[i].name   = new_name: contacts[i].name
-           //    email    ? contacts[i].email  = email   : contacts[i].email
-           //    phone    ? contacts[i].phone  = phone   : contacts[i].phone 
-           found ++          
+    contacts.forEach((contact,i) => {     
+        if (contact.name.toLowerCase() == dataUpdate.name.toLowerCase() ) {       
+           if (dataUpdate.new_name) {contacts[i].name   = dataUpdate.new_name}
+           if (dataUpdate.email)    {contacts[i].email  = dataUpdate.email}
+           if (dataUpdate.phone)    {contacts[i].phone  = dataUpdate.phone}
         }
     });  
-
-    cekPencarian(found,name)
 
     fs.writeFileSync('data/contacts.json',JSON.stringify(contacts));
     console.log("Data contact berhasil di update");
 }
 
-//fungsi validasi Email
-function cekEmail(email) {
-    if (validator.isEmail(email)) {
-        return false
-    }else{
-        console.log('Email belum valid')
-        exit()
-    }
-}
-
-//fungsi validasi Nomer hp
-function cekNomer(phone) {
-    if (validator.isMobilePhone(phone,'id-ID')) {
-        return false          
-    }else{
-        console.log('Nomer belum valid')
-        exit()
-    }
-}
 
 //fungsi mengecek ada tidaknya nama yg dicari
 function cekPencarian(found,name){
@@ -144,4 +113,4 @@ function cekPencarian(found,name){
     }
 }
 
-module.exports={SaveContact,listContact,detailContact,deleteContact,updateContact}
+module.exports={SaveContact,listContact,detailContact,deleteContact,updateContact,cekDuplikat,findContact}

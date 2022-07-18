@@ -1,0 +1,39 @@
+<!-- Membuat form untuk update data -->
+<div class="container">
+    <div class="row">
+        <div class="col">
+
+          <!-- menampilkan detail error ketika update -->
+          <% if (typeof errors !='undefined' ) { %>
+              <div class="alert alert-danger" role="alert">
+                  <ul>
+                      <% errors.forEach(error => { %>
+                          <li><%= error.msg %> </li>
+                      <% }) %>
+                  </ul>
+              </div>
+          <% } %>
+ 
+          <form method="post" action="/contact/edit" >
+              <legend>Form update contact</legend>
+              <div class="mb-3">
+                <input type="text" class="form-control" name="name" value="<%= cont.name %>" hidden>
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Nama</label>
+                <input type="text" class="form-control" name="new_name" value="<%= cont.name %>">
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Email baru</label>
+                <input type="email" class="form-control" name="email" value="<%= cont.email %>">
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Number Phone</label>
+                <input type="number" class="form-control" name="phone" value="<%= cont.phone %>">
+              </div>
+              <button type="submit" class="btn btn-primary">update</button>
+          </form>
+
+        </div>
+    </div>
+</div>

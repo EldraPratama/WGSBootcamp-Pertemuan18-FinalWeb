@@ -1,0 +1,57 @@
+<!-- Membuat form untuk input data -->
+<div class="container">
+    <div class="row">
+        <div class="col">
+
+            <!-- menampilkan detail error ketika input -->
+            <% if (typeof errors !='undefined' ) { %>
+                <div class="alert alert-danger" role="alert">
+                    <ul>
+                        <% errors.forEach(error => { %>
+                            <li><%= error.msg %> </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } %>
+
+            <form method="post" action="/contact" >
+                <legend>Form input new contact</legend>
+
+                <!-- melakukan pengecekan jika terjadi error saat input,maka nilai sebelumnya masih ada -->
+                <% if (typeof cont == 'undefined') { %>
+
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Nama</label>
+                      <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Email address</label>
+                      <input type="email" class="form-control" name="email" >
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputPassword1" class="form-label">Number Phone</label>
+                      <input type="number" class="form-control" name="phone" >
+                    </div>  
+
+                <% }else{ %>
+
+                    <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Nama</label>
+                        <input type="text" class="form-control" name="name" value="<%= cont.name %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Email address</label>
+                        <input type="email" class="form-control" name="email" value="<%= cont.email %>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleInputPassword1" class="form-label">Number Phone</label>
+                        <input type="number" class="form-control" name="phone" value="<%= cont.phone %>" >
+                    </div>
+                <% } %> 
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+        </div>
+    </div>
+</div>
