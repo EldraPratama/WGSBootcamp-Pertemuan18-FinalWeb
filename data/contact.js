@@ -25,20 +25,10 @@ const SaveContact = (dataInput)=>{
     const contact  = dataInput;
     const contacts = loadContact()
     contacts.push(contact);
- 
-    //Mengecek data duplicate 
-    let duplicate = 0
-    for (let i = 0; i < contacts.length ;i++){
-        let dataJson  = contacts[i]   
-        if (contact.name == dataJson.name ) { duplicate ++}     
-    }
+      
+    fs.writeFileSync('data/contacts.json',JSON.stringify(contacts));
 
-    if (duplicate > 1) {
-        console.log("Nama sudah terdaftar");
-    }else{       
-        fs.writeFileSync('data/contacts.json',JSON.stringify(contacts));
-        console.log('Terima Kasih sudah memasukkan data');
-    }
+    
 }
 
 //fungsi mengecek data duplikat
@@ -73,19 +63,14 @@ const detailContact = (name) => {
 
 //Fungsi menghapus contact
 const deleteContact = (name) => {
-    // variabel found untuk mengecek ada tidaknya nama yang dicari
-    let found = 0 
     const contacts = loadContact()
     contacts.forEach((contact,i) => {
         if (contact.name == name ) {
             contacts.splice(i,1)
             fs.writeFileSync('data/contacts.json',JSON.stringify(contacts));
-            console.log("Data contact berhasil di hapus");
-            found ++   
         }
     });
 
-    cekPencarian(found,name)
 }
 
 
@@ -99,9 +84,17 @@ const updateContact = (dataUpdate) => {
            if (dataUpdate.phone)    {contacts[i].phone  = dataUpdate.phone}
         }
     });  
-
     fs.writeFileSync('data/contacts.json',JSON.stringify(contacts));
     console.log("Data contact berhasil di update");
+
+    // v2
+    // const filtered = contacts.filter(
+    //     (contact) => contact.name.toLowerCase() !== dataUpdate.
+    //     name.toLowerCase()
+    // )
+    // delete dataUpdate.name
+    // filtered.push(dataUpdate)
+    // SaveContact(filtered)
 }
 
 

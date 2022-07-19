@@ -7,11 +7,12 @@ const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const flash = require('connect-flash')
 
-
 const contacts     = require('./data/contact.js');
+const pool         = require("./db") 
 const app          = express()
-const port         = 3000
+const port         = 3001
 
+app.use(express.json())
 //menjalankan morgan
 app.use(morgan('dev'))
 
@@ -24,7 +25,7 @@ app.set('layout', 'layout/layout');
 
 //Mengizinkan file gambar diakses
 app.use(express.static('public'))
-app.use(express.urlencoded())
+app.use(express.urlencoded({extended:true}))
 
 //konfigurasi flash
 app.use(cookieParser('secret'))
@@ -38,12 +39,10 @@ app.use(
 )
 app.use(flash())
 
-
 app.use((req, res, next) => {
   console.log('Time:', Date.now())
   next()
 })
-
 
 //untuk halaman index
 app.get('/', (req, res) => {
@@ -54,28 +53,26 @@ app.get('/', (req, res) => {
   })
 })
 
-
 //untuk halaman about
 app.get('/about', (req, res) => {
     res.render('about',{ title:'About Page'})
 
 })
 
-
-//untuk halaman contact
-app.get('/contact', (req, res) => {
-  //mengambil data dari json lalu mengirimkan datanya ke contact
-  cont = contacts.listContact()
-     res.render('contact',{ 
-       title:'Contact Page',
-       statusData:0,
-       cont,
-       msg : req.flash('msg'),
-       msg2 : req.flash('msg2')
-    })
+app.get('/contact', async (req, res) => {
+  //mengambil data dari db lalu mengirimkan datanya ke contact
+    const listCont = await pool.query(`SELECT * FROM contact`)
+    const cont = listCont.rows
+    res.render('contact',{ 
+      title:'Contact Page',
+      statusData:0,
+      cont,
+      msg : req.flash('msg'),
+      msg2 : req.flash('msg2')
+   })
 })
 
-//mengambil data dari json lalu mengirimkan datanya ke contact
+//menampilkan form tambah data
 app.get('/contact/add', (req, res) => {
      res.render('add-contact',{ 
        title:'Contact Page',
@@ -83,85 +80,87 @@ app.get('/contact/add', (req, res) => {
 })
 
 //proses input data
-app.post('/contact',
+app.post('/contact',[
   //validasi input data
-  body('name').custom((value) => {
-    const duplikat = contacts.cekDuplikat(value)
+  body('name').custom( async (value) => {
+    const duplikat = await findContact(value)
     if (duplikat) {
       throw new Error('Nama contact sudah ada!')
     }
     return true
   }),
   check('email','Email tidak valid').isEmail(),
-  check('phone','Nomer Telepon tidak valid').isMobilePhone('id-ID'),
-  (req, res) => {
+  check('mobile','Nomer Telepon tidak valid').isMobilePhone('id-ID')
+],async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.render('add-contact',{ 
+      res.render('add-contact',
+      { 
         title:'Contact Page',
         errors:errors.array(),
         cont:req.body,
       })    
     }else{
-      contacts.SaveContact(req.body)  
-      //mengirim flash
-      req.flash('msg','Data contact berhasil di Tambah')
-      res.redirect('/contact')
+      // proses input
+        const name   = req.body.name.toLowerCase()
+        const mobile = req.body.mobile
+        const email  = req.body.email
+        const newCont = await pool.query(`INSERT INTO contact values('${name}','${mobile}','${email}')`)
+        req.flash('msg','Data contact berhasil di Tambah')
+        res.redirect('/contact')
     }
 })
 
-// menampilkan list contact
-app.get('/contact', (req, res) => {
-  //mengambil data dari json lalu mengirimkan datanya ke contact
-  cont = contacts.listContact()
-     res.render('contact',{ 
-       title:'Contact Page',
-       cont,
-    })
-})
-  
 // menampilkan detail contact
-app.get('/contact/:name', (req, res) => {
-    //mengambil data dari json lalu mengirimkan datanya ke contact
-      cont = contacts.detailContact( req.params.name )
-      res.render('detailContact',{ 
-        title:'Contact Page',
-        cont,
+app.get('/contact/:name', async(req, res) => {
+  //mengecek ada tidaknya data contact
+  const contact = await findContact(req.params.name)
+  if (!contact) {
+    req.flash('msg2',`Nama contact ${req.params.name} tidak tersedia`)
+    res.redirect('/contact')  
+  }else{  
+    //mulai proses menampilkan detail
+    const listCont = await pool.query(`SELECT * FROM contact WHERE name='${req.params.name}'`)
+    const cont = listCont.rows[0]
+    res.render('detailContact',{ 
+      title:'Contact Page',
+      cont,
     })
+  }
 })
- 
-// mengedit contact
-app.get('/contact/edit/:name', (req, res) => {
 
-    //mengecek apakah nama yang akan di edit terdaftar 
-    //jika tidak terdaftar akan dikembalikan ke halaman contact
-    const contact = contacts.findContact(req.params.name)
-    if (!contact) {
-      req.flash('msg2',`Nama contact ${req.params.name} tidak tersedia`)
-      res.redirect('/contact')   
-    //jika terdaftar akan ke halaman edit contact
-    }else{
-      cont = contacts.detailContact( req.params.name )
-      res.render('edit-contact',{ 
-        title:'Contact Page',
-        cont,
-      })
-    }
+//menampilkan halaman edit
+app.get('/contact/edit/:name', async (req, res) => {
+  //mengecek ada tidaknya data contact
+  const contact = await findContact(req.params.name)
+  if (!contact) {
+    req.flash('msg2',`Nama contact ${req.params.name} tidak tersedia`)
+    res.redirect('/contact')  
+  }else{
+    //mulai proses edit
+    const listCont = await pool.query(`SELECT * FROM contact WHERE name='${req.params.name}'`)
+    const cont = listCont.rows[0]
+    res.render('edit-contact',{ 
+      title:'Contact Page',
+      cont,
+    })
+  }
 })
 
 //proses update data
 app.post('/contact/edit',
   //validasi input data
-  body('new_name').custom((value, {req}) => {
-    const duplikat = contacts.cekDuplikat(value)
-    if (value !== req.body.name && duplikat) {
+  body('new_name').custom( async (value, {req}) => {
+    const duplikat = await findContact(value)
+    console.log(duplikat);
+    if (value !== req.body.name && duplikat ) {
       throw new Error('Nama contact sudah ada!')
     }
     return true
   }),
   check('email','Email tidak valid').isEmail(),
-  check('phone','Nomer Telepon tidak valid').isMobilePhone('id-ID'),
-  (req, res) => {
+  check('mobile','Nomer Telepon tidak valid').isMobilePhone('id-ID'),
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.render('edit-contact',{ 
@@ -170,37 +169,43 @@ app.post('/contact/edit',
         cont : req.body,
       })    
     }else{
-      contacts.updateContact(req.body)
-      req.flash('msg','Data contact berhasil di Update')  
-      res.redirect('/contact/')
+        const name     = req.body.name.toLowerCase()
+        const new_name = req.body.new_name
+        const mobile   = req.body.mobile
+        const email    = req.body.email
+        const newCont = await pool.query(`UPDATE contact SET name='${new_name}', mobile='${mobile}', email='${email}'
+          WHERE name = '${name}'`)
+        req.flash('msg','Data contact berhasil di Update')  
+        res.redirect('/contact/')
     }
 })
 
 // menghapus data 
-app.get('/contact/delete/:name', (req, res) => {
+app.get('/contact/delete/:name', async (req, res) => {
     //mengecek apakah nama yang di hapus terdaftar
-    const contact = contacts.findContact(req.params.name)
+    const contact = await findContact(req.params.name)
     if (!contact) {
       req.flash('msg2',`Nama contact ${req.params.name} tidak tersedia`)
-      res.redirect('/contact')   
+      res.redirect('/contact')  
     }else{
-      contacts.deleteContact( req.params.name )
-      req.flash('msg','Data contact berhasil di Delete')
-      res.redirect('/contact')
+      const listCont = await pool.query(`DELETE FROM contact WHERE name = '${req.params.name}'`)
+      req.flash('msg','Data contact berhasil di Hapus')  
+      res.redirect('/contact/')
     }
 })
-
   
-// app.get('/product/:id', (req, res) => {
-//     res.send(`product id: ${req.params.id} <br> category id : ${ req.query.category}`)
-// })
-
 app.use('/', (req, res) => {
   res.status(404)
   res.send('Not found')
 })
 
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
+  
 })
+
+const findContact = async (value) => {
+  const name    = value.toLowerCase()
+  const contact = await pool.query(`SELECT lower(name) FROM contact WHERE lower(name) ='${name}'`)
+  return contact.rows[0]
+}
