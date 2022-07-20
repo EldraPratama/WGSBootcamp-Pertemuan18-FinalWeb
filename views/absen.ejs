@@ -1,0 +1,80 @@
+
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1>Welcome to absen page</h1>
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="card mt-3 text-bg-success mb-3" style="width: 16rem; height:6rem ;">
+                        <div class="card-body">
+                          <h4 class="card-title">Tanggal
+                            <p id="tanggal"></p>
+                          </h4>                                                 
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="card mt-3 text-bg-success mb-3" style="width: 16rem; height:6rem ;">
+                        <div class="card-body">
+                          <h4 class="card-title">Waktu saat ini
+                            <div class="row">
+                                <div class="col-sm-3"><p id="jam"></p></div>
+                                <div class="col-sm-3"><p id="menit"></p></div>
+                                <div class="col-sm-3"><p id="detik"></p></div>
+                            </div>
+                          </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="row">
+                <div class="col col-sm-4">
+                    <form method="post" action="/absen" >
+                        <div class="mb-3">
+                          <label for="exampleInputEmail1" class="form-label">Nama</label>
+                          <input type="text" class="form-control" name="name" value=" <%= name %> " readonly>
+                        </div>
+                        <div class="mb-3">
+                          <input hidden type="date" class="form-control" name="jam_masuk"   >
+                        </div>
+                        <div class="mb-3">
+                          <input hidden type="datetime" class="form-control" name="jam_keluar" >
+                        </div>  
+
+                        <% if ( name != 'a' ) { %>
+                            <button type="submit" class="btn btn-primary">Absen Masuk</button>                      
+                        <% }else{ %>
+                            <button type="submit" class="btn btn-info">Absen Keluar</button> 
+                        <% } %>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    waktu();
+    tanggal();
+    cek();
+	function waktu() {
+		var waktu = new Date();
+		setTimeout("waktu()", 1000);
+		document.getElementById("jam").innerHTML = waktu.getHours();
+		document.getElementById("menit").innerHTML = waktu.getMinutes();
+		document.getElementById("detik").innerHTML = waktu.getSeconds();
+	}
+    function tanggal() {
+        var waktu = new Date();
+        var year  = waktu.getFullYear();
+        var month = waktu.getMonth() + 1;
+        var date  = waktu.getDate();
+        var tgl   = date + "/" + month + "/" + year;
+        document.getElementById("tanggal").innerHTML = tgl;
+    }
+</script>

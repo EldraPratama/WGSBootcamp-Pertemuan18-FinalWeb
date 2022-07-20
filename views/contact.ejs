@@ -1,8 +1,8 @@
   <!-- menampilkan contact list -->
     <div class="container">
-        <h1>Hello to Contact Page</h1>
-        <a href="/contact/add" class="btn btn-primary mb-3"><i class="bi bi-person-plus-fill"></i> Add contact</a>
-        <h3><i class="bi bi-person-lines-fill"></i> Contact List</h3>
+        <h1>Hello to Employe Page</h1>
+        <a href="/employee/add" class="btn btn-primary mb-3"><i class="bi bi-person-plus-fill"></i> Add Employee</a>
+        <h3><i class="bi bi-person-lines-fill"></i> Employee List</h3>
         <div class="row">
             <div class="col">
 
@@ -20,29 +20,29 @@
                         <tr>
                             <th>No</th>
                             <th>Nama</th>
-                            <th>Email</th>
+                            <th>Phone</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% if (cont.length == 0) { %>
-                            <tr><td colspan="3"><b>Contact masih kosong</b></td></tr>
+                            <tr><td colspan="3"><center><b>Employee masih kosong</b></td></tr>
                         <% }else{ %>  
                             <% cont.forEach( (con,index) => { %>
                                 <tr>
                                     <td><%= index+1 %></td>
                                     <td><%= con.name %> </td>
-                                    <td><%= con.email %> </td>                    
+                                    <td><%= con.phone %> </td>                    
                                     <td>
-                                        <a href="/contact/<%= con.name %>">
+                                        <a href="/employee/<%= con.name %>">
                                             <span class="badge rounded-pill text-bg-success">detail</span>   
                                         </a>
-                                        <a href="/contact/edit/<%= con.name %>">
-                                            <span class="badge rounded-pill text-bg-primary">edit</span>   
-                                        </a>
-                                        <a href="/contact/delete/<%= con.name %>">
+                                        <a href="/employee/delete/<%= con.name %>">
                                             <span class="badge rounded-pill text-bg-danger" onclick="return confirm('yakin?');">hapus</span>   
                                         </a>
+                                        <!-- <a href="/contact/edit/<%= con.name %>">
+                                            <span class="badge rounded-pill text-bg-primary">edit</span>   
+                                        </a> -->
                                     </td>                    
                                 </tr>
                             <% }) %>
