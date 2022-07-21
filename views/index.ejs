@@ -2,14 +2,16 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <h1>Hello world</h1>
-            <p>Welcome to my page <%= nama %></p>
+            <h1>Hello...</h1>
+            <p>Welcome to home page <%= name %> </p>
          
-            <div class="card text-bg-success mb-4" style="width: 60rem;">
-                <div class="card-body">
-                  <h6 class="card-title "> Login sukses Eldra </h6>
+            <% if (name != null) { %>
+                <div class="card text-bg-success mb-4" style="width: 60rem;">
+                    <div class="card-body">
+                      <h6 class="card-title "> <%= name %> berhasil login ,Kamu adalah <%= role %> </h6>
+                    </div>
                 </div>
-            </div>
+            <% } %>
 
             <div class="card text-bg-primary" style="width: 60rem;">
                 <div class="card-body">

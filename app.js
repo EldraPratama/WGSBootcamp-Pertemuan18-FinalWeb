@@ -29,12 +29,13 @@ app.use(express.urlencoded({extended:true}))
 
 //konfigurasi flash
 app.use(cookieParser('secret'))
+const oneDay = 1000 * 60 * 60 * 24
 app.use(
   session({
-    cookie : {maxAge:6000},
     secret : 'secret',
     resave : true,
     saveUninitialized : true ,
+    cookie: { maxAge: oneDay }
   })
 )
 app.use(flash())
@@ -48,15 +49,21 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.render('index',
   {
-    nama:'Eldra Surya P',
     title:'WebServer EJS',
+    name : req.session.name,
+    role : req.session.role
   })
 })
 
 //untuk halaman about
 app.get('/about', (req, res) => {
-    res.render('about',{ title:'About Page'})
 
+    res.render('about',
+    { 
+      title:'About Page',
+      name : req.session.name,
+      role : req.session.role,
+    })
 })
 
 // app.get('/contact', async (req, res) => {
@@ -201,7 +208,71 @@ app.get('/contact/delete/:name', async (req, res) => {
 app.get('/login', (req, res) => {
   res.render('login',{ 
     title:'Contact Page',
+    msg  : req.flash('msg'),
+    msg2 : req.flash('msg2')
  })
+})
+
+//proses login
+app.post('/login',
+// [
+//   //validasi input data
+//   body('name').custom( async (value) => {
+//     const duplikat = await findContact(value)
+//     if (duplikat) {
+//       throw new Error('Nama contact sudah ada!')
+//     }
+//     return true
+//   })
+// ],
+async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.render('login',
+      { 
+        title:'Contact Page',
+        errors:errors.array(),
+        cont:req.body,
+      })    
+      // console.log(errors);
+      // console.log(req.body.username);
+    }else{
+      // proses login
+
+        const login = await pool.query(`SELECT * FROM public.user where username='${req.body.username}' 
+            and password='${req.body.password}'`)
+
+        if ( login.rows[0] == null ) {
+          req.flash('msg2','Login Gagal')
+          res.redirect('/login')
+        }else{
+          req.flash('msg','Login Sukses')
+          req.session.name = login.rows[0].name 
+          req.session.role = login.rows[0].role 
+          res.render('index',
+            {
+              title:'WebServer EJS',
+              name : req.session.name,
+              role : req.session.role
+            })
+        }
+    }
+})
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(function(err) {
+    if(err) {
+      return next(err);
+    } else {
+      return res.redirect('/login');
+      // req.flash('msg','Log out berhasil')
+      // res.render('login',{ 
+      //   title:'Contact Page',
+      //   msg  : req.flash('msg')
+      // })
+    }
+  })
+
 })
 
 
@@ -228,7 +299,6 @@ app.post('/absen/:name',
   //   }
   //   return true
   // })
-
  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -256,6 +326,14 @@ app.post('/absen/:name',
     }
 })
 
+//menampilkan form tambah data employee
+app.get('/employee/add', (req, res) => {
+  res.render('add-employee',{ 
+    title:'Contact Page',
+    name : req.session.name,
+    role : req.session.role,
+ })
+})
 //menampilkan employee
 app.get('/employee', async (req, res) => {
   //mengambil data dari db lalu mengirimkan datanya ke contact
@@ -266,7 +344,9 @@ app.get('/employee', async (req, res) => {
       title:'Contact Page',
       cont,
       msg : req.flash('msg'),
-      msg2 : req.flash('msg2')
+      msg2 : req.flash('msg2'),
+      name : req.session.name,
+      role : req.session.role,
    })
   //  console.log(morgan('dev'));
 })
@@ -277,7 +357,7 @@ app.get('/employee/:name', async(req, res) => {
   const contact = await findEmployee(req.params.name)
   if (!contact) {
     req.flash('msg2',`Nama contact ${req.params.name} tidak tersedia`)
-    res.redirect('/contact')  
+    res.redirect('/employee')  
   }else{  
     //mulai proses menampilkan detail
     const employe = await pool.query(`SELECT * FROM public.user WHERE name='${req.params.name}'`)
@@ -286,15 +366,10 @@ app.get('/employee/:name', async(req, res) => {
     res.render('detailContact',{ 
       title:'Contact Page',
       cont,
+      name : req.session.name,
+      role : req.session.role,
     })
   }
-})
-
-//menampilkan form tambah data employee
-app.get('/employee/add', (req, res) => {
-  res.render('add-employee',{ 
-    title:'Contact Page',
- })
 })
 
 //input data employee
@@ -320,14 +395,10 @@ app.post('/employee',[
       // proses absen
         const name     = req.body.name.toLowerCase()
 
-  //       SELECT id, name, tgl, jam_masuk, jam_keluar
-	// FROM public.absence where tgl='now()' and jam_masuk is null ;
-
-        const newAbsen = await pool.query(`INSERT INTO public.absen
-        (name, tgl, jam_masuk, jam_keluar)
-         VALUES ('${name}', now(), now(), now());`)
+        const newAbsen = await pool.query(`INSERT INTO public.user (name, username, password, role)
+          VALUES ('${name}','${req.body.username}', '${req.body.password}', '${role}')`)
      
-        req.flash('msg','Data Absen berhasil di Tambah')
+        req.flash('msg','Data Employee berhasil di Tambah')
         res.redirect('/employee')
     }
 })
@@ -355,7 +426,9 @@ app.get('/attendance', async (req, res) => {
       title:'Contact Page',
       cont,
       msg : req.flash('msg'),
-      msg2 : req.flash('msg2')
+      msg2 : req.flash('msg2'),
+      name : req.session.name,
+      role : req.session.role,
    })
 })
   

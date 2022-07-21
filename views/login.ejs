@@ -3,6 +3,14 @@
     <div class="row">
         <div class="col">
 
+            <% if (msg.length !== 0) { %>
+                <div class="alert alert-success" role="alert"> <%= msg %> </div>
+            <% } %>
+
+            <% if (msg2.length !== 0 ) { %>
+                <div class="alert alert-danger" role="alert"> <%= msg2 %> </div>
+            <% } %>
+
                 <div class="card">
                     <div class="card-body">
                         
@@ -26,7 +34,7 @@
                 </div>
             </div>
             <!-- menampilkan detail error ketika input -->
-            <% if (typeof errors !='undefined' ) { %>
+            <!-- <% if (typeof errors !='undefined' ) { %>
                 <div class="alert alert-danger" role="alert">
                     <ul>
                         <% errors.forEach(error => { %>
@@ -34,7 +42,7 @@
                         <% }) %>
                     </ul>
                 </div>
-            <% } %>
+            <% } %> -->
 
         </div>
     </div>
