@@ -59,18 +59,18 @@ app.get('/about', (req, res) => {
 
 })
 
-app.get('/contact', async (req, res) => {
-  //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listCont = await pool.query(`SELECT * FROM public.user`)
-    const cont = listCont.rows
-    console.log(cont);
-    res.render('contact',{ 
-      title:'Contact Page',
-      cont,
-      msg : req.flash('msg'),
-      msg2 : req.flash('msg2')
-   })
-})
+// app.get('/contact', async (req, res) => {
+//   //mengambil data dari db lalu mengirimkan datanya ke contact
+//     const listCont = await pool.query(`SELECT * FROM public.user`)
+//     const cont = listCont.rows
+//     console.log(cont);
+//     res.render('contact',{ 
+//       title:'Contact Page',
+//       cont,
+//       msg : req.flash('msg'),
+//       msg2 : req.flash('msg2')
+//    })
+// })
 
 // menampilkan detail contact
 app.get('/contact/:name', async(req, res) => {
@@ -197,39 +197,39 @@ app.get('/contact/delete/:name', async (req, res) => {
     }
 })
 
-//menampilkan employee
-app.get('/employee', async (req, res) => {
-  //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listCont = await pool.query(`SELECT * FROM public.user`)
-    const cont = listCont.rows
-    console.log(cont);
-    res.render('contact',{ 
-      title:'Contact Page',
-      cont,
-      msg : req.flash('msg'),
-      msg2 : req.flash('msg2')
-   })
+//menampilkan form login
+app.get('/login', (req, res) => {
+  res.render('login',{ 
+    title:'Contact Page',
+ })
 })
 
+
+
 //menampilkan halaman absen
-app.get('/absen/:name', (req, res) => {
+app.get('/absen/:name', async (req, res) => {
+  const absence = await pool.query(`SELECT * FROM public.absence where name='${req.params.name}' and tgl='now()'`)
+  console.log(absence.rows)
   res.render('absen',{ 
     title:'Contact Page',
-    name:req.params.name
+    name:req.params.name,
+    msg : req.flash('msg'),
+    absen:absence.rows[0]
  })
 })
 
 //proses melakukan absen
-app.post('/absen',[
+app.post('/absen/:name',
   //validasi input data
-  body('name').custom( async (value) => {
-    const duplikat = await findContact(value)
-    if (duplikat) {
-      throw new Error('Nama contact sudah ada!')
-    }
-    return true
-  })
-],async (req, res) => {
+  // body('name').custom( async (value) => {
+  //   const duplikat = await findContact(value)
+  //   if (duplikat) {
+  //     throw new Error('Nama contact sudah ada!')
+  //   }
+  //   return true
+  // })
+
+ async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.render('absen',
@@ -237,18 +237,42 @@ app.post('/absen',[
         title:'Contact Page',
         errors:errors.array(),
         cont:req.body,
+        name:req.params.name,
       })    
     }else{
-      // proses input
+      // proses input jam masuk
         const name   = req.body.name.toLowerCase()
-        const newCont = await pool.query(`INSERT INTO contact values('${name}','${mobile}','${email}')`)
-        req.flash('msg','Data absen berhasil di Tambah')
-        res.redirect('/employee')
+        const absen = await pool.query(`SELECT * FROM public.absence where name='${req.params.name}' and tgl='now()'`)
+
+        if ( typeof absen == 'undefined' || absen.jam_masuk == null ) {
+          const absen = await pool.query(`INSERT INTO public.absence(name, tgl, jam_masuk) VALUES ('${name}', now(),now())`)
+          req.flash('msg','Absen jam masuk berhasil')
+          res.redirect('/absen/')
+        } else if (  absen.jam_keluar == null ){
+          const absen = await pool.query(`UPDATE public.absence SET  jam_keluar= now() WHERE name = '${name}'`)
+          req.flash('msg','Absen jam keluar berhasil')
+          res.redirect('/absen/')
+        }
     }
 })
 
+//menampilkan employee
+app.get('/employee', async (req, res) => {
+  //mengambil data dari db lalu mengirimkan datanya ke contact
+    const listCont = await pool.query(`SELECT * FROM public.user`)
+    const cont = listCont.rows
+    // console.log(cont);
+    res.render('contact',{ 
+      title:'Contact Page',
+      cont,
+      msg : req.flash('msg'),
+      msg2 : req.flash('msg2')
+   })
+  //  console.log(morgan('dev'));
+})
+
 // menampilkan detail employee
-app.get('/contact/:name', async(req, res) => {
+app.get('/employee/:name', async(req, res) => {
   //mengecek ada tidaknya data contact
   const contact = await findEmployee(req.params.name)
   if (!contact) {

@@ -20,6 +20,7 @@
                     <tr>
                         <th>No</th>
                         <th>Nama</th>
+                        <th>Tanggal</th>
                         <th>Jam Masuk</th>
                         <th>Jam Keluar</th>
                     </tr>
@@ -32,6 +33,7 @@
                             <tr>
                                 <td><%= index+1 %></td>
                                 <td><%= con.name %> </td>
+                                <td><%= con.tgl.toLocaleDateString('id-ID') %> </td>
                                 <td><%= con.jam_masuk %> </td>                    
                                 <td><%= con.jam_keluar %> </td>                    
                                 <!-- <td>

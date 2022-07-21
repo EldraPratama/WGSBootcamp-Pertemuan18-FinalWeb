@@ -18,38 +18,46 @@
                     <div class="card mt-3 text-bg-success mb-3" style="width: 16rem; height:6rem ;">
                         <div class="card-body">
                           <h4 class="card-title">Waktu saat ini
-                            <div class="row">
-                                <div class="col-sm-3"><p id="jam"></p></div>
-                                <div class="col-sm-3"><p id="menit"></p></div>
-                                <div class="col-sm-3"><p id="detik"></p></div>
-                            </div>
+                            <p id="jam"></p>
                           </h4>
                         </div>
                     </div>
                 </div>
             </div>
 
-
+            <% if (msg.length !== 0) { %>
+                <div class="alert alert-success" role="alert"> <%= msg %> </div>
+            <% } %>
 
             <div class="row">
-                <div class="col col-sm-4">
-                    <form method="post" action="/absen" >
+                <div class="col col-sm-6">
+                    <form method="post" action="/absen/<%= name %>" >
                         <div class="mb-3">
                           <label for="exampleInputEmail1" class="form-label">Nama</label>
                           <input type="text" class="form-control" name="name" value=" <%= name %> " readonly>
                         </div>
-                        <div class="mb-3">
-                          <input hidden type="date" class="form-control" name="jam_masuk"   >
-                        </div>
-                        <div class="mb-3">
-                          <input hidden type="datetime" class="form-control" name="jam_keluar" >
-                        </div>  
 
-                        <% if ( name != 'a' ) { %>
-                            <button type="submit" class="btn btn-primary">Absen Masuk</button>                      
-                        <% }else{ %>
+
+                        <% if (  typeof absen == 'undefined' || absen.jam_masuk == null ) { %>
+                            <button type="submit" class="btn btn-primary">Absen Masuk</button>   
+                        <% }else if (  absen.jam_keluar == null ){ %> 
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Jam Masuk</label>
+                                <input type="text" class="form-control" name="jam_masuk" value="<%= absen.jam_masuk %>" readonly>
+                            </div> 
                             <button type="submit" class="btn btn-info">Absen Keluar</button> 
+                        <% }else if (  absen.jam_keluar != null ){ %>
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Jam Masuk</label>
+                                <input type="text" class="form-control" name="jam_masuk" value="<%= absen.jam_masuk %>" readonly>
+                            </div> 
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Jam Masuk</label>
+                              <input type="text" class="form-control" name="jam_keluar" value="<%= absen.jam_keluar %>" readonly >
+                            </div>  
+                            <button type="submit" class="btn btn-info">Selesai Absen hari ini</button> 
                         <% } %>
+                      
                     </form>
                 </div>
             </div>
@@ -61,13 +69,12 @@
 <script>
     waktu();
     tanggal();
-    cek();
+
 	function waktu() {
 		var waktu = new Date();
 		setTimeout("waktu()", 1000);
-		document.getElementById("jam").innerHTML = waktu.getHours();
-		document.getElementById("menit").innerHTML = waktu.getMinutes();
-		document.getElementById("detik").innerHTML = waktu.getSeconds();
+        var jam = waktu.getHours() + ":" + waktu.getMinutes() + ":" + waktu.getSeconds()
+        document.getElementById("jam").innerHTML = jam;
 	}
     function tanggal() {
         var waktu = new Date();

@@ -1,0 +1,41 @@
+<!-- Membuat form untuk input data -->
+<div class="container">
+    <div class="row">
+        <div class="col">
+
+                <div class="card">
+                    <div class="card-body">
+                        
+                    <!-- <div class="col-sm-6"> -->
+                        <form method="post" action="/login" >
+                            <legend>Form Login</legend>
+                            <!-- melakukan pengecekan jika terjadi error saat input,maka nilai sebelumnya masih ada -->
+                                <div class="mb-3">
+                                    <label for="exampleInputEmail1" class="form-label">Username</label>
+                                    <input type="text" class="form-control" name="username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="exampleInputPassword1" class="form-label">Password</label>
+                                    <input type="password" class="form-control" name="password" required>
+                                </div>  
+            
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                        <!-- </div> -->
+                    </div>
+                </div>
+            </div>
+            <!-- menampilkan detail error ketika input -->
+            <% if (typeof errors !='undefined' ) { %>
+                <div class="alert alert-danger" role="alert">
+                    <ul>
+                        <% errors.forEach(error => { %>
+                            <li><%= error.msg %> </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } %>
+
+        </div>
+    </div>
+</div>
