@@ -2,13 +2,16 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <h1>Hello...</h1>
-            <p>Welcome to home page <%= name %> </p>
+            <h1>Hello...</h1> 
+            
+            <% if (msg.length !== 0) { %>
+                <div class="alert alert-success" role="alert"> <%= msg %> </div>
+            <% } %>
          
             <% if (name != null) { %>
                 <div class="card text-bg-success mb-4" style="width: 60rem;">
                     <div class="card-body">
-                      <h6 class="card-title "> <%= name %> berhasil login ,Kamu adalah <%= role %> </h6>
+                      <h6 class="card-title ">Selamat datang <%= name %> ,Kamu adalah <%= role %> </h6>
                     </div>
                 </div>
             <% } %>

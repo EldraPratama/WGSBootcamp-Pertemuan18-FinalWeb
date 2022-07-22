@@ -50,6 +50,7 @@ app.get('/', (req, res) => {
   res.render('index',
   {
     title:'WebServer EJS',
+    msg  : req.flash('msg'),
     name : req.session.name,
     role : req.session.role
   })
@@ -253,7 +254,8 @@ async (req, res) => {
             {
               title:'WebServer EJS',
               name : req.session.name,
-              role : req.session.role
+              role : req.session.role,
+              msg  : req.flash('msg'),
             })
         }
     }
@@ -278,19 +280,26 @@ app.get('/logout', (req, res) => {
 
 
 //menampilkan halaman absen
-app.get('/absen/:name', async (req, res) => {
-  const absence = await pool.query(`SELECT * FROM public.absence where name='${req.params.name}' and tgl='now()'`)
-  console.log(absence.rows)
+app.get('/absen', async (req, res) => {
+  const absence = await pool.query(`SELECT * FROM public.absence where name='${req.session.name}' and tgl='now()'`)
+  // console.log(absence.rows)
+  // console.log(absence.rows.length)
+  let id 
+  if (absence.rows.length != 0) {
+    id =  absence.rows[0].id
+  }
   res.render('absen',{ 
     title:'Contact Page',
-    name:req.params.name,
-    msg : req.flash('msg'),
+    id   : id,
+    name :req.session.name,
+    role :req.session.role,
+    msg  : req.flash('msg'),
     absen:absence.rows[0]
  })
 })
 
 //proses melakukan absen
-app.post('/absen/:name',
+app.post('/absen',
   //validasi input data
   // body('name').custom( async (value) => {
   //   const duplikat = await findContact(value)
@@ -312,17 +321,34 @@ app.post('/absen/:name',
     }else{
       // proses input jam masuk
         const name   = req.body.name.toLowerCase()
-        const absen = await pool.query(`SELECT * FROM public.absence where name='${req.params.name}' and tgl='now()'`)
-
-        if ( typeof absen == 'undefined' || absen.jam_masuk == null ) {
-          const absen = await pool.query(`INSERT INTO public.absence(name, tgl, jam_masuk) VALUES ('${name}', now(),now())`)
-          req.flash('msg','Absen jam masuk berhasil')
-          res.redirect('/absen/')
-        } else if (  absen.jam_keluar == null ){
-          const absen = await pool.query(`UPDATE public.absence SET  jam_keluar= now() WHERE name = '${name}'`)
-          req.flash('msg','Absen jam keluar berhasil')
-          res.redirect('/absen/')
+        const id     = req.body.id
+        let absen 
+   
+        if (name && id) {
+          absen = await pool.query(`SELECT * FROM public.absence where name='${name}' and tgl='now()' and id='${id}'`)         
+          console.log(absen.rows);
+          console.log('pengecekan ke 1');
+          
+        }else{
+          absen = await pool.query(`SELECT * FROM public.absence where name='${req.session.name}' and tgl='now()'`)
+          console.log(absen.rows);
+          console.log('pengecekan ke 2');
         }
+         
+        if (absen.rows.length == 0) {
+            const absenin = await pool.query(`INSERT INTO public.absence(name, tgl, jam_masuk) VALUES ('${name}', now(),now())`)
+            console.log('jam masuk');
+            req.flash('msg','Absen jam masuk berhasil')
+            res.redirect('/absen')
+        } else if (absen.jam_keluar == null ) {
+            console.log('jam keluar');
+            const absenout = await pool.query(`UPDATE public.absence SET  jam_keluar=now() WHERE id ='${id}'`)
+            req.flash('msg','Absen jam keluar berhasil')
+            res.redirect('/absen')
+        } else {
+          console.log('gagal');
+        }
+        
     }
 })
 

@@ -2,36 +2,38 @@
 <div class="container">
     <div class="row">
         <div class="col">
-
-            <% if (msg.length !== 0) { %>
-                <div class="alert alert-success" role="alert"> <%= msg %> </div>
-            <% } %>
-
-            <% if (msg2.length !== 0 ) { %>
-                <div class="alert alert-danger" role="alert"> <%= msg2 %> </div>
-            <% } %>
-
-                <div class="card">
-                    <div class="card-body">
-                        
-                    <!-- <div class="col-sm-6"> -->
-                        <form method="post" action="/login" >
-                            <legend>Form Login</legend>
-                            <!-- melakukan pengecekan jika terjadi error saat input,maka nilai sebelumnya masih ada -->
-                                <div class="mb-3">
-                                    <label for="exampleInputEmail1" class="form-label">Username</label>
-                                    <input type="text" class="form-control" name="username" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="exampleInputPassword1" class="form-label">Password</label>
-                                    <input type="password" class="form-control" name="password" required>
-                                </div>  
             
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
-                        <!-- </div> -->
-                    </div>
-                </div>
+            <form method="post" action="/login" >
+                        <div class="card">
+                            <div class="card-body">
+                                <!-- melakukan pengecekan jika terjadi error saat input,maka nilai sebelumnya masih ada -->
+                                <div class="row justify-content-center mt-4">
+                                    <div class="col-md-6">
+
+                                        <% if (msg.length !== 0) { %>
+                                            <div class="alert alert-success" role="alert"> <%= msg %> </div>
+                                        <% } %>
+                            
+                                        <% if (msg2.length !== 0 ) { %>
+                                            <div class="alert alert-danger" role="alert"> <%= msg2 %> </div>
+                                        <% } %>
+                                        
+                                        <div class="mb-3">
+                                            <label for="exampleInputEmail1" class="form-label">Username</label>
+                                            <input type="text" class="form-control" name="username" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="exampleInputPassword1" class="form-label">Password</label>
+                                            <input type="password" class="form-control" name="password" required>
+                                        </div>  
+                                        <button type="submit" class="btn btn-primary">Login</button>
+                                    </div>
+                                </div>
+                
+                            </div>
+                        </div>
+            </form>
+                        
             </div>
             <!-- menampilkan detail error ketika input -->
             <!-- <% if (typeof errors !='undefined' ) { %>
