@@ -34,7 +34,8 @@
                     <form method="post" action="/absen" >
                         <div class="mb-3">
                           <label for="exampleInputEmail1" class="form-label">Nama</label>
-                          <input type="text" class="form-control" name="name" value="<%= name %>" readonly>
+                          <input type="text" class="form-control" name="name" value="<%=name%>" readonly>
+                          <input type="text" class="form-control" name="id" value="<%= id %>" hidden>
                         </div>
 
 
@@ -54,8 +55,9 @@
                             <div class="mb-3">
                                 <label for="exampleInputEmail1" class="form-label">Jam Masuk</label>
                               <input type="text" class="form-control" name="jam_keluar" value="<%= absen.jam_keluar %>" readonly >
-                            </div>  
-                            <button type="submit" class="btn btn-info">Selesai Absen hari ini</button> 
+                            </div>
+                              <a href="/logout" class="btn btn-danger">Selesai Absen hari ini , Mau logout ?</a>
+                            <!-- <button type="submit" class="btn btn-info">Selesai Absen hari ini</button>  -->
                         <% } %>
                       
                     </form>
@@ -73,7 +75,7 @@
 	function waktu() {
 		var waktu = new Date();
 		setTimeout("waktu()", 1000);
-        var jam = waktu.getHours() + ":" + waktu.getMinutes() + ":" + waktu.getSeconds()
+        var jam = waktu.getHours() + " : " + waktu.getMinutes() + " : " + waktu.getSeconds()
         document.getElementById("jam").innerHTML = jam;
 	}
     function tanggal() {
@@ -81,7 +83,7 @@
         var year  = waktu.getFullYear();
         var month = waktu.getMonth() + 1;
         var date  = waktu.getDate();
-        var tgl   = date + "/" + month + "/" + year;
+        var tgl   = date + " / " + month + " / " + year;
         document.getElementById("tanggal").innerHTML = tgl;
     }
 </script>

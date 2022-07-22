@@ -30,16 +30,10 @@
                 <a class="nav-link" href="/logout">Logout</a>
               </li>
 
-            <% }else { %>
+            <% }else if (role =='superadmin') { %>
 
               <li class="nav-item">
                 <a class="nav-link" href="/">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/about">About</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/absen">Absen</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/employee">Employee</a>
@@ -50,7 +44,23 @@
               <li class="nav-item">
                 <a class="nav-link" href="/logout">Logout</a>
               </li>
-             <% } %> 
+              
+             <% } else {%> 
+
+              <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/profil">Profil</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/absen">Absen</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+              </li>
+
+             <% }%> 
           </ul>
         </div>
       </div>

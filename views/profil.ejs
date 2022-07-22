@@ -1,0 +1,44 @@
+<div class="container">
+    <div class="row mt-5">
+        <div class="col col-sm-6 text-center">
+            <img src="img/gambarPemandangan.jpg" class="rounded-circle" alt="EldraSP" width="300">
+        </div>
+        <div class="col-sm-6">
+
+            <% if (typeof errors !='undefined' ) { %>
+                <div class="alert alert-danger" role="alert">
+                    <ul>
+                        <% errors.forEach(error => { %>
+                            <li><%= error.msg %> </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } %>
+
+            <% if (msg.length !== 0) { %>
+                <div class="alert alert-success" role="alert"> <%= msg %> </div>
+            <% } %>
+
+            <form method="post" action="/profil" >
+                <legend>Form update profil</legend>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" name="name" value="<%= cont.name %>" hidden>
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Nama</label>
+                      <input type="text" class="form-control" name="new_name" value="<%= cont.name %>" readonly>
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Telepon</label>
+                      <input type="number" class="form-control" name="phone" value="<%= cont.phone %>">
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">NIK</label>
+                      <input type="text" class="form-control" name="nik" value="<%= cont.nik %>">
+                    </div> 
+                    
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+        </div>
+    </div>
+</div>
