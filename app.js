@@ -11,6 +11,7 @@ const contacts     = require('./data/contact.js');
 const pool         = require("./db") 
 const app          = express()
 const port         = 3001
+const bcrypt       = require('bcrypt')
 
 
 app.use(express.json())
@@ -211,7 +212,10 @@ app.get('/contact/delete/:name', async (req, res) => {
 })
 
 //menampilkan form login
-app.get('/login', (req, res) => {
+app.get('/login', async (req, res) => {
+  // const password = await bcrypt.hash('admin',10)
+  // console.log(password);
+  console.log(morgan('dev'));
   res.render('login',{ 
     title:'Contact Page',
     msg  : req.flash('msg'),
@@ -240,32 +244,39 @@ async (req, res) => {
         errors:errors.array(),
         cont:req.body,
       })    
-      // console.log(errors);
-      // console.log(req.body.username);
     }else{
       // proses login
-
-        const login = await pool.query(`SELECT * FROM public.user where username='${req.body.username}' 
-            and password='${req.body.password}'`)
-
-        if ( login.rows[0] == null ) {
-          req.flash('msg2','Login Gagal')
-          res.redirect('/login')
-        }else{
+      const login = await pool.query(`SELECT * FROM public.user where username='${req.body.username}'`)
+      console.log(login.rows[0])
+      if (typeof login.rows[0] =='undefined') {
+        req.flash('msg2','Username masih salah')
+        res.redirect('/login')
+      }else{
+        const cek = await bcrypt.compare(req.body.password , login.rows[0].password)
+        if (cek) {
           req.flash('msg','Login Sukses')
           req.session.name = login.rows[0].name 
           req.session.role = login.rows[0].role 
           res.redirect('/')
-          // res.render('index',
-          //   {
-          //     title:'WebServer EJS',
-          //     name : req.session.name,
-          //     role : req.session.role,
-          //     msg  : req.flash('msg'),
-          //   })
+        }else{
+          req.flash('msg2','Password masih salah')
+          res.redirect('/login')
         }
+      }
+      
+
+
+
+        // res.render('index',
+        //   {
+        //     title:'WebServer EJS',
+        //     name : req.session.name,
+        //     role : req.session.role,
+        //     msg  : req.flash('msg'),
+        //   })
+      }
     }
-})
+)
 
 app.get('/logout', (req, res) => {
   req.session.destroy(function(err) {
@@ -489,11 +500,10 @@ app.post('/employee',[
         role : req.session.role
       })    
     }else{
-      // proses absen
         const name     = req.body.name.toLowerCase()
-
+        const password = await bcrypt.hash(req.body.password,10)
         const newAbsen = await pool.query(`INSERT INTO public.user (name, username, password, role)
-          VALUES ('${name}','${req.body.username}', '${req.body.password}', '${req.body.role}')`)
+          VALUES ('${name}','${req.body.username}', '${password}', '${req.body.role}')`)
      
         req.flash('msg','Data Employee berhasil di Tambah')
         res.redirect('/employee')
@@ -517,6 +527,28 @@ app.get('/employee/delete/:name', async (req, res) => {
   }
 })
 
+//melihat riwayat absen dari sisi user biasa
+app.get('/riwayat-absen', async (req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  if (req.session.role != 'user') {
+    res.redirect('/')
+  }
+  //mengambil data dari db lalu mengirimkan datanya ke contact
+    const listCont = await pool.query(`SELECT * FROM absence where name='${req.session.name}' order by tgl desc`)
+    const cont = listCont.rows
+    res.render('riwayat-absen',{ 
+      title:'Contact Page',
+      cont,
+      msg : req.flash('msg'),
+      msg2 : req.flash('msg2'),
+      name : req.session.name,
+      role : req.session.role,
+   })
+})
+
+//melihat kehadiran pegawai dari sisi admin
 app.get('/attendance', async (req, res) => {
   if(!req.session.name){
     res.redirect('/login')
@@ -525,7 +557,7 @@ app.get('/attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listCont = await pool.query(`SELECT * FROM absence`)
+    const listCont = await pool.query(`SELECT * FROM absence order by tgl desc`)
     const cont = listCont.rows
     console.log(cont);
     res.render('attendance',{ 
@@ -537,6 +569,83 @@ app.get('/attendance', async (req, res) => {
       role : req.session.role,
    })
 })
+
+app.get('/specifik-attendance', async (req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  if (req.session.role != 'superadmin') {
+    res.redirect('/')
+  }
+  //mengambil data dari db lalu mengirimkan datanya ke contact
+    const listUser = await pool.query(`SELECT * FROM public.user`)
+    const users = listUser.rows
+    let cont 
+    console.log(cont);
+    // console.log(users);
+    res.render('specifik-attendance',{ 
+      title:'Contact Page',
+      cont,
+      users,
+      msg : req.flash('msg'),
+      msg2 : req.flash('msg2'),
+      name : req.session.name,
+      role : req.session.role,
+   })
+})
+
+app.post('/specifik-attendance', async (req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  if (req.session.role != 'superadmin') {
+    res.redirect('/')
+  }
+  //mengambil data dari db lalu mengirimkan datanya ke contact
+    const listUser = await pool.query(`SELECT * FROM public.user`)
+    const listCont = await pool.query(`SELECT * FROM public.absence where name='${req.body.name}'`)
+    const cont = listCont.rows
+    const users = listUser.rows
+
+    // console.log(cont);
+    console.log(cont);
+    res.render('specifik-attendance',{ 
+      title:'Contact Page',
+      selected: req.body.name,
+      cont,
+      users,
+      msg : req.flash('msg'),
+      msg2 : req.flash('msg2'),
+      name : req.session.name,
+      role : req.session.role,
+   })
+})
+
+app.get('/log', async (req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  if (req.session.role != 'superadmin') {
+    res.redirect('/')
+  }
+  //mengambil data dari db lalu mengirimkan datanya ke contact
+    const listUser = await pool.query(`SELECT * FROM public.user`)
+    const users = listUser.rows
+    let cont 
+    console.log(cont);
+    // console.log(users);
+    res.render('log',{ 
+      title:'Contact Page',
+      cont,
+      users,
+      msg : req.flash('msg'),
+      msg2 : req.flash('msg2'),
+      name : req.session.name,
+      role : req.session.role,
+   })
+})
+
+
   
 app.use('/', (req, res) => {
   res.status(404)

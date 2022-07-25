@@ -1,6 +1,8 @@
-
+  <!-- menampilkan contact list -->
   <div class="container">
-    <h1>Attendance</h1>
+    <h1>Riwayat Absen </h1>
+    <!-- <a href="/employee/add" class="btn btn-primary mb-3"><i class="bi bi-person-plus-fill"></i> Add Employee</a>
+    <h3><i class="bi bi-person-lines-fill"></i> Employee List</h3> -->
     <div class="row">
         <div class="col">
 
@@ -25,7 +27,7 @@
                 </thead>
                 <tbody>
                     <% if (cont.length == 0) { %>
-                        <tr><td colspan="5"><center><b>Attendance masih kosong</b></center></td></tr>
+                        <tr><td colspan="5"><center><b>Riwayat absen masih kosong</b></center></td></tr>
                     <% }else{ %>  
                         <% cont.forEach( (con,index) => { %>
                             <tr>

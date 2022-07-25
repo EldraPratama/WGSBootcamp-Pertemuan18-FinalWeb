@@ -25,12 +25,15 @@
                 </div>
             </div>
 
-            <% if (msg.length !== 0) { %>
-                <div class="alert alert-success" role="alert"> <%= msg %> </div>
-            <% } %>
+
 
             <div class="row">
                 <div class="col col-sm-6">
+
+                    <% if (msg.length !== 0) { %>
+                        <div class="alert alert-success" role="alert"> <%= msg %> </div>
+                    <% } %>
+                    
                     <form method="post" action="/absen" >
                         <div class="mb-3">
                           <label for="exampleInputEmail1" class="form-label">Nama</label>
@@ -54,9 +57,14 @@
                             </div> 
                             <div class="mb-3">
                                 <label for="exampleInputEmail1" class="form-label">Jam Masuk</label>
-                              <input type="text" class="form-control" name="jam_keluar" value="<%= absen.jam_keluar %>" readonly >
+                                <input type="text" class="form-control" name="jam_keluar" value="<%= absen.jam_keluar %>" readonly >
                             </div>
-                              <a href="/logout" class="btn btn-danger">Selesai Absen hari ini , Mau logout ?</a>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <a href="/logout" class="btn btn-danger"> Mau logout ? </a>
+                                    <a href="/riwayat-absen" class="btn btn-info">Mau lihat catatan absen ?</a>
+                                </div>
+                            </div>
                             <!-- <button type="submit" class="btn btn-info">Selesai Absen hari ini</button>  -->
                         <% } %>
                       
