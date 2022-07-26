@@ -7,12 +7,25 @@ const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const flash = require('connect-flash')
 
+const fs           = require('fs');
 const contacts     = require('./data/contact.js');
 const pool         = require("./db") 
 const app          = express()
 const port         = 3001
 const bcrypt       = require('bcrypt')
+var multer         = require('multer');
+const { log } = require('console');
 
+//untuk upload foto
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/upload')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  }
+})
+var upload = multer({ storage: storage })
 
 app.use(express.json())
 //menjalankan morgan
@@ -26,7 +39,7 @@ app.use(expressLayouts);
 app.set('layout', 'layout/layout');
 
 //Mengizinkan file gambar diakses
-app.use(express.static('public'))
+app.use("/public", express.static('public'))
 app.use(express.urlencoded({extended:true}))
 
 //konfigurasi flash
@@ -55,7 +68,7 @@ app.get('/', (req, res) => {
 
   res.render('index',
   {
-    title:'WebServer EJS',
+    title:'Employee absence',
     msg  : req.flash('msg'),
     name : req.session.name,
     role : req.session.role
@@ -99,7 +112,7 @@ app.get('/contact/:name', async(req, res) => {
     const cont = employe.rows[0]
     console.log(cont);
     res.render('detailContact',{ 
-      title:'Contact Page',
+      title:'Employee Absence',
       cont,
     })
   }
@@ -109,7 +122,7 @@ app.get('/contact/:name', async(req, res) => {
 //menampilkan form tambah data
 app.get('/contact/add', (req, res) => {
      res.render('add-employee',{ 
-       title:'Contact Page',
+       title:'Employee Absence',
     })
 })
 
@@ -130,7 +143,7 @@ app.post('/contact',[
     if (!errors.isEmpty()) {
       res.render('add-employee',
       { 
-        title:'Contact Page',
+        title:'Employee Absence',
         errors:errors.array(),
         cont:req.body,
       })    
@@ -151,14 +164,14 @@ app.get('/contact/edit/:name', async (req, res) => {
   //mengecek ada tidaknya data contact
   const contact = await findContact(req.params.name)
   if (!contact) {
-    req.flash('msg2',`Nama contact ${req.params.name} tidak tersedia`)
+    req.flash('msg2',`Nama employee ${req.params.name} tidak tersedia`)
     res.redirect('/contact')  
   }else{
     //mulai proses edit
     const listCont = await pool.query(`SELECT * FROM contact WHERE name='${req.params.name}'`)
     const cont = listCont.rows[0]
     res.render('edit-contact',{ 
-      title:'Contact Page',
+      title:'Employee Absence',
       cont,
     })
   }
@@ -181,7 +194,7 @@ app.post('/contact/edit',
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.render('edit-contact',{ 
-        title:'Contact Page',
+        title:'Employee Absence',
         errors:errors.array(),
         cont : req.body,
       })    
@@ -213,11 +226,11 @@ app.get('/contact/delete/:name', async (req, res) => {
 
 //menampilkan form login
 app.get('/login', async (req, res) => {
-  // const password = await bcrypt.hash('admin',10)
+  // const password = await bcrypt.hash('eldra',10)
   // console.log(password);
-  console.log(morgan('dev'));
+  // console.log(morgan('dev'));
   res.render('login',{ 
-    title:'Contact Page',
+    title:'Employee Absence',
     msg  : req.flash('msg'),
     msg2 : req.flash('msg2')
  })
@@ -225,22 +238,12 @@ app.get('/login', async (req, res) => {
 
 //proses login
 app.post('/login',
-// [
-//   //validasi input data
-//   body('name').custom( async (value) => {
-//     const duplikat = await findContact(value)
-//     if (duplikat) {
-//       throw new Error('Nama contact sudah ada!')
-//     }
-//     return true
-//   })
-// ],
-async (req, res) => {
+ async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.render('login',
       { 
-        title:'Contact Page',
+        title:'Employee Absence',
         errors:errors.array(),
         cont:req.body,
       })    
@@ -249,7 +252,7 @@ async (req, res) => {
       const login = await pool.query(`SELECT * FROM public.user where username='${req.body.username}'`)
       console.log(login.rows[0])
       if (typeof login.rows[0] =='undefined') {
-        req.flash('msg2','Username masih salah')
+        req.flash('msg2','Username atau Password masih salah')
         res.redirect('/login')
       }else{
         const cek = await bcrypt.compare(req.body.password , login.rows[0].password)
@@ -259,7 +262,7 @@ async (req, res) => {
           req.session.role = login.rows[0].role 
           res.redirect('/')
         }else{
-          req.flash('msg2','Password masih salah')
+          req.flash('msg2','Username atau Password masih salah')
           res.redirect('/login')
         }
       }
@@ -269,7 +272,7 @@ async (req, res) => {
 
         // res.render('index',
         //   {
-        //     title:'WebServer EJS',
+        //     title:'Employee absence',
         //     name : req.session.name,
         //     role : req.session.role,
         //     msg  : req.flash('msg'),
@@ -299,7 +302,7 @@ app.get('/profil', async(req, res) => {
     const cont = employe.rows[0]
     console.log(cont)
     res.render('profil',{ 
-      title:'Contact Page',
+      title:'Employee Absence',
       cont,
       name : req.session.name,
       role : req.session.role,
@@ -308,7 +311,7 @@ app.get('/profil', async(req, res) => {
 })
 
 //proses update profil
-app.post('/profil',
+app.post('/profil', upload.array('image'),
   //validasi input data
   body('new_name').custom( async (value, {req}) => {
     const duplikat = await findEmployee(value)
@@ -322,20 +325,37 @@ app.post('/profil',
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      const employe = await pool.query(`SELECT * FROM public.user WHERE name='${req.session.name}'`)
+      const cont = employe.rows[0]
       res.render('profil',{ 
-        title:'Contact Page',
+        title:'Employee Absence',
         errors:errors.array(),
-        cont : req.body,
+        name : req.session.name,
+        role : req.session.role,
+        cont ,
         msg  : req.flash('msg')
       })    
     }else{
-      console.log(req.body);
+        const user = await pool.query(`SELECT * FROM public.user where name='${req.session.name}'`)
+        console.log(user.rows[0])
+        
         const name     = req.body.name.toLowerCase()
         const new_name = req.body.new_name.toLowerCase()
         const phone    = req.body.phone
         const nik      = req.body.nik  
-        const newCont = await pool.query(`UPDATE public.user
+
+        if (!req.files[0]) {
+          const newCont = await pool.query(`UPDATE public.user
            SET name='${new_name}', phone='${phone}', nik='${nik}' WHERE name='${name}'`)
+        }else{
+          if (user.rows[0].image != null) {
+            fs.unlinkSync(`./public/upload/${user.rows[0].image}`)
+          }
+          const image = req.files[0].filename 
+          const newCont = await pool.query(`UPDATE public.user SET name='${new_name}', 
+                  phone='${phone}', nik='${nik}', image='${image}' WHERE name='${name}'`)
+        }
+
         req.flash('msg','Data Employee berhasil di Update')  
         res.redirect('/profil')
     }
@@ -355,7 +375,7 @@ app.get('/absen', async (req, res) => {
     id =  absence.rows[0].id
   }
   res.render('absen',{ 
-    title:'Contact Page',
+    title:'Employee Absence',
     id   : id,
     name :req.session.name,
     role :req.session.role,
@@ -379,7 +399,7 @@ app.post('/absen',
     if (!errors.isEmpty()) {
       res.render('absen',
       { 
-        title:'Contact Page',
+        title:'Employee Absence',
         errors:errors.array(),
         cont:req.body,
         name:req.params.name,
@@ -424,7 +444,7 @@ app.get('/employee/add', (req, res) => {
     res.redirect('/login')
   }
   res.render('add-employee',{ 
-    title:'Contact Page',
+    title:'Employee Absence',
     name : req.session.name,
     role : req.session.role,
  })
@@ -438,11 +458,11 @@ app.get('/employee', async (req, res) => {
       res.redirect('/')
     }
     //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listCont = await pool.query(`SELECT * FROM public.user`)
+    const listCont = await pool.query(`SELECT * FROM public.user where role='user'`)
     const cont = listCont.rows
     // console.log(cont);
     res.render('contact',{ 
-      title:'Contact Page',
+      title:'Employee Absence',
       cont,
       msg : req.flash('msg'),
       msg2 : req.flash('msg2'),
@@ -468,7 +488,7 @@ app.get('/employee/:name', async(req, res) => {
     const cont = employe.rows[0]
     console.log(cont);
     res.render('detailContact',{ 
-      title:'Contact Page',
+      title:'Employee Absence',
       cont,
       name : req.session.name,
       role : req.session.role,
@@ -536,7 +556,7 @@ app.get('/riwayat-absen', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listCont = await pool.query(`SELECT * FROM absence where name='${req.session.name}' order by tgl desc`)
+    const listCont = await pool.query(`SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence where name='${req.session.name}' order by tgl desc`)
     const cont = listCont.rows
     res.render('riwayat-absen',{ 
       title:'Contact Page',
@@ -557,7 +577,32 @@ app.get('/attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listCont = await pool.query(`SELECT * FROM absence order by tgl desc`)
+    let query = `SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence if `
+    const listCont = await pool.query(`SELECT *,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence order by tgl desc`)
+    const cont = listCont.rows
+    console.log(cont);
+    res.render('attendance',{ 
+      title:'Contact Page',
+      cont,
+      msg : req.flash('msg'),
+      msg2 : req.flash('msg2'),
+      name : req.session.name,
+      role : req.session.role,
+   })
+})
+
+//melihat kehadiran pegawai dari sisi admin
+app.post('/attendance', async (req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  if (req.session.role != 'superadmin') {
+    res.redirect('/')
+  }
+  //mengambil data dari db lalu mengirimkan datanya ke contact
+  console.log(req.body);
+    let query = `SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence if `
+    const listCont = await pool.query(`SELECT *,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence order by tgl desc`)
     const cont = listCont.rows
     console.log(cont);
     res.render('attendance',{ 
@@ -578,7 +623,7 @@ app.get('/specifik-attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listUser = await pool.query(`SELECT * FROM public.user`)
+    const listUser = await pool.query(`SELECT *  FROM public.user`)
     const users = listUser.rows
     let cont 
     console.log(cont);
@@ -603,7 +648,7 @@ app.post('/specifik-attendance', async (req, res) => {
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
     const listUser = await pool.query(`SELECT * FROM public.user`)
-    const listCont = await pool.query(`SELECT * FROM public.absence where name='${req.body.name}'`)
+    const listCont = await pool.query(`SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM public.absence where name='${req.body.name}'`)
     const cont = listCont.rows
     const users = listUser.rows
 

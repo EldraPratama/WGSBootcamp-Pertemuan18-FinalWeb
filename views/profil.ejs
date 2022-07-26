@@ -1,7 +1,13 @@
 <div class="container">
     <div class="row mt-5">
         <div class="col col-sm-6 text-center">
-            <img src="img/gambarPemandangan.jpg" class="rounded-circle" alt="EldraSP" width="300">
+
+            <% if (cont.image == null) { %>
+              <img src="../public/img/gambarPemandangan.jpg" class="rounded-circle" alt="gambarPemandangan" width="300">
+            <% }else{ %>
+              <img src="../public/upload/<%= cont.image %>" class="rounded-circle" alt="<%= cont.image %>" width="300">
+            <% } %>
+
         </div>
         <div class="col-sm-6">
 
@@ -19,7 +25,7 @@
                 <div class="alert alert-success" role="alert"> <%= msg %> </div>
             <% } %>
 
-            <form method="post" action="/profil" >
+            <form method="post" action="/profil" enctype="multipart/form-data">
                 <legend>Form update profil</legend>
                     <div class="mb-3">
                         <input type="text" class="form-control" name="name" value="<%= cont.name %>" hidden>
@@ -36,8 +42,14 @@
                       <label for="exampleInputEmail1" class="form-label">NIK</label>
                       <input type="text" class="form-control" name="nik" value="<%= cont.nik %>">
                     </div> 
+                    <div>
+                        <label for="exampleInputEmail1" class="form-label">Gambar</label>
+                        <input type="file" class="form-control" name="image" value="<%= cont.image %>">
+                    </div>
+                    <div class="mt-2">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
                     
-                <button type="submit" class="btn btn-primary">Update</button>
             </form>
         </div>
     </div>

@@ -8,9 +8,10 @@
                     <select class="form-select" aria-label="Default select example" name="name">
                         <% users.forEach(user => { %>  
                             <% if (typeof selected != 'undefined' && selected == user.name) { %>
-                                <option selected value="<%=user.name%>"><%=user.name%></option>   
+                                <option selected value="<%=user.name%>"><%=user.name%></option>  
+                            <% }else{ %>
+                                <option value="<%=user.name%>"><%=user.name%></option>
                             <% } %>
-                            <option value="<%=user.name%>"><%=user.name%></option>
                         <% }) %>
                     </select>
                 </div>  

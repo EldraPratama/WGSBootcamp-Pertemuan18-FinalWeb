@@ -15,7 +15,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
       <div class="container-fluid">
-        <a class="navbar-brand" href="./">WGS Bootcamp Batch 2</a>
+        <a class="navbar-brand" href="./">Employee Absence</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -24,52 +24,57 @@
              <% if (typeof name == 'undefined' || typeof role == 'undefined' ) { %>
 
               <li class="nav-item">
-                <a class="nav-link" href="/login">Login</a>
+                <a class="nav-link active" href="/login">Login</a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a class="nav-link" href="/logout">Logout</a>
-              </li>
+              </li> -->
 
             <% }else if (role =='superadmin') { %>
 
               <li class="nav-item">
-                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link active" href="/">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/employee">Employee</a>
+                <a class="nav-link active" href="/employee">Employee</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/attendance">Attendance</a>
+                <a class="nav-link active" href="/attendance">Attendance</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/specifik-attendance">Specifik Attendance</a>
+                <a class="nav-link active" href="/specifik-attendance">Specifik Attendance</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/log">Log</a>
+                <a class="nav-link active" href="/log">Log</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/logout">Logout</a>
+                <a class="nav-link active" href="/logout">Logout</a>
               </li>
               
              <% } else {%> 
 
               <li class="nav-item">
-                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link active" href="/">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/profil">Profil</a>
+                <a class="nav-link active" href="/profil">Profil</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/absen">Absen</a>
+                <a class="nav-link active" href="/absen">Absen</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/riwayat-absen">Riwayat Absen</a>
+                <a class="nav-link active" href="/riwayat-absen">Riwayat Absen</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/logout">Logout</a>
+                <a class="nav-link active" href="/logout">Logout</a>
               </li>
+              <!-- <li class="nav-item">
+                <a class="nav-link active" ><%= name %> </a>
+              </li> -->
+  
 
              <% }%> 
+
           </ul>
         </div>
       </div>
