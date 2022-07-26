@@ -1,13 +1,11 @@
 <div class="container">
     <div class="row mt-5">
         <div class="col col-sm-6 text-center">
-
             <% if (cont.image == null) { %>
               <img src="../public/img/gambarPemandangan.jpg" class="rounded-circle" alt="gambarPemandangan" width="300">
             <% }else{ %>
               <img src="../public/upload/<%= cont.image %>" class="rounded-circle" alt="<%= cont.image %>" width="300">
             <% } %>
-
         </div>
         <div class="col-sm-6">
 
@@ -27,23 +25,23 @@
 
             <form method="post" action="/profil" enctype="multipart/form-data">
                 <legend>Form update profil</legend>
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <input type="text" class="form-control" name="name" value="<%= cont.name %>" hidden>
                     </div>
-                    <div class="mb-3">
-                      <label for="exampleInputEmail1" class="form-label">Nama</label>
+                    <div class="mb-2">
+                      <label class="form-label">Nama</label>
                       <input type="text" class="form-control" name="new_name" value="<%= cont.name %>" readonly>
                     </div>
-                    <div class="mb-3">
-                      <label for="exampleInputEmail1" class="form-label">Telepon</label>
+                    <div class="mb-2">
+                      <label class="form-label">Telepon</label>
                       <input type="number" class="form-control" name="phone" value="<%= cont.phone %>">
                     </div>
-                    <div class="mb-3">
-                      <label for="exampleInputEmail1" class="form-label">NIK</label>
+                    <div class="mb-2">
+                      <label class="form-label">NIK</label>
                       <input type="text" class="form-control" name="nik" value="<%= cont.nik %>">
                     </div> 
                     <div>
-                        <label for="exampleInputEmail1" class="form-label">Gambar</label>
+                        <label class="form-label">Gambar</label>
                         <input type="file" class="form-control" name="image" value="<%= cont.image %>">
                     </div>
                     <div class="mt-2">

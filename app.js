@@ -56,7 +56,26 @@ app.use(
 app.use(flash())
 
 app.use((req, res, next) => {
+  
+  let name = 'Anonim'
+  let role = '-'
   console.log('Time:', Date.now())
+  // console.log(req.url)
+  // console.log(req.method)
+
+  // if (!req.session.name) {
+  //   console.log(name)
+  // }else{
+  //   name = req.session.name
+  //   console.log(name)
+  // }
+
+  // if (!req.session.role) {
+  //   console.log(role)
+  // }else{
+  //   role = req.session.role
+  //   console.log(req.session.role)
+  // }
   next()
 })
 
@@ -117,7 +136,6 @@ app.get('/contact/:name', async(req, res) => {
     })
   }
 })
-
 
 //menampilkan form tambah data
 app.get('/contact/add', (req, res) => {
@@ -229,6 +247,9 @@ app.get('/login', async (req, res) => {
   // const password = await bcrypt.hash('eldra',10)
   // console.log(password);
   // console.log(morgan('dev'));
+  if (typeof req.session.name != 'undefined') {
+    res.redirect('/')
+  }
   res.render('login',{ 
     title:'Employee Absence',
     msg  : req.flash('msg'),
@@ -577,8 +598,7 @@ app.get('/attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    let query = `SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence if `
-    const listCont = await pool.query(`SELECT *,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence order by tgl desc`)
+    const listCont = await pool.query(`SELECT *,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence order by tgl desc, jam_masuk desc`)
     const cont = listCont.rows
     console.log(cont);
     res.render('attendance',{ 
@@ -599,20 +619,41 @@ app.post('/attendance', async (req, res) => {
   if (req.session.role != 'superadmin') {
     res.redirect('/')
   }
-  //mengambil data dari db lalu mengirimkan datanya ke contact
-  console.log(req.body);
-    let query = `SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence if `
-    const listCont = await pool.query(`SELECT *,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence order by tgl desc`)
-    const cont = listCont.rows
-    console.log(cont);
-    res.render('attendance',{ 
-      title:'Contact Page',
-      cont,
-      msg : req.flash('msg'),
-      msg2 : req.flash('msg2'),
-      name : req.session.name,
-      role : req.session.role,
-   })
+ 
+  let {tgl1,tgl2,jam_kerja,jumlah} = req.body
+
+  if (jumlah!='') {
+    if (jumlah>=10) {
+      jumlah = jumlah +':00:00'
+      console.log(jumlah);
+    }else if(jumlah<10){
+      jumlah = '0'+ jumlah + ':00:00'
+      console.log(jumlah);
+    }
+  }
+
+  let query = `SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence 
+        where tgl >='${tgl1}' and tgl <='${tgl2}'`
+  
+  if (jam_kerja =='kurang') {
+    query = query + `and to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') <= '${jumlah}'`
+  }else if (jam_kerja =='lebih') {
+    query = query + `and to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') >= '${jumlah}' `
+  }
+  query = query + `order by tgl desc, jam_masuk desc`
+
+  // const listCont = await pool.query(`SELECT *,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence order by tgl desc`)
+  const listCont = await pool.query(query)
+  const cont = listCont.rows
+  res.render('attendance',{ 
+    title:'Contact Page',
+    cont,
+    tgl1,tgl2,jam_kerja,jumlah,
+    msg : req.flash('msg'),
+    msg2 : req.flash('msg2'),
+    name : req.session.name,
+    role : req.session.role,
+  })
 })
 
 app.get('/specifik-attendance', async (req, res) => {
@@ -690,8 +731,6 @@ app.get('/log', async (req, res) => {
    })
 })
 
-
-  
 app.use('/', (req, res) => {
   res.status(404)
   res.send('Not found')

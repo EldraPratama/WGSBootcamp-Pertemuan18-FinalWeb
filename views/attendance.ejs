@@ -13,23 +13,33 @@
                 <div class="alert alert-warning" role="alert"> <%= msg2 %> </div>
             <% } %>
 
-            <% const date = new Date() %> 
+            <% const date1= new Date() %> 
+            <% const date2 = new Date() %> 
             <form method="post" action="/attendance" >
                 <div class="row">
                     <div class="col-md-3">
-                        <input type="date" class="form-control" value=" <%=date.toISOString().slice(0,10)%>" id="tgl" name="tgl">
+                        <input type="date" class="form-control" value="<%=typeof tgl1!='undefined' ? tgl1 : date1.toISOString().slice(0,10)%>" name="tgl1">
                     </div>
                     <div class="col-md-3">
-                        <input type="date" class="form-control" value="" id="tgl" name="tgl">
+                        <input type="date" class="form-control" value="<%=typeof tgl2!='undefined' ? tgl2 :date2.toISOString().slice(0,10)%>" name="tgl2">
                     </div>
                     <div class="col-md-2">
                         <select class="form-select" aria-label="Default select example" name="jam_kerja">
-                            <option value="lebih">Lebih dari</option>
-                            <option value="kurang">Kurang dari</option>
+                            <% if (typeof jam_kerja!='undefined' && jam_kerja=='lebih') { %>
+                                <option value="lebih">Lebih dari</option>
+                                <option value="kurang">Kurang dari</option>
+                            <% }else{ %>
+                                <option value="kurang">Kurang dari</option>
+                                <option value="lebih">Lebih dari</option>
+                            <% } %>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <input type="number" class="form-control" name="jumlah_jam_kerja" >
+                        <select class="form-select" aria-label="Default select example" name="jumlah">
+                            <% for( let i = 1; i <= 12; i++ ) { %>
+                                    <option value="<%=i%>"><%=i%>  jam</option>
+                            <% } %>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary d-block"><i class="bi bi-search"></i> Cari</button>
@@ -50,7 +60,7 @@
                 </thead>
                 <tbody>
                     <% if (cont.length == 0) { %>
-                        <tr><td colspan="5"><center><b>Attendance masih kosong</b></center></td></tr>
+                        <tr><td colspan="6"><center><b>Attendance masih kosong</b></center></td></tr>
                     <% }else{ %>  
                         <% cont.forEach( (con,index) => { %>
                             <tr>
