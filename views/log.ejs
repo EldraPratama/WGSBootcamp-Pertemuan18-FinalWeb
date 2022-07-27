@@ -1,10 +1,9 @@
-
   <div class="container">
     <h1>Log Aplication</h1>
         <form method="post" action="/log" >
             <div class="row">
                 <div class="col-md-3 mt-1 mb-1" >    
-                    <input type="text" class="form-control" name="cari">
+                    <input type="text" class="form-control" name="cari" value="<%= typeof cari!='undefined'?cari:''%>">
                 </div>  
                 <div class="col-md-3 mt-1">
                     <button type="submit" class="btn btn-primary d-block"><i class="bi bi-search"></i> Cari</button>
@@ -30,23 +29,26 @@
                         <th>Nama</th>
                         <th>Role</th>
                         <th>Url</th>
+                        <th>Method</th>
                         <th>Tanggal</th>
                         <th>Waktu</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% if (cont == null) { %>
-                        <tr><td colspan="7"><center><b>Log dari website ini masih kosong </b></center></td></tr>  
-                    <% }else if (cont.length == 0) { %>
-                        <tr><td colspan="7"><center><b>Log website ini masih kosong</b></center></td></tr>
+                    <% if (logs == null) { %>
+                        <tr><td colspan="6"><center><b>Log dari website ini masih kosong </b></center></td></tr>  
+                    <% }else if (logs.length == 0) { %>
+                        <tr><td colspan="6"><center><b>Log website ini masih kosong</b></center></td></tr>
                     <% }else{ %>  
-                        <% cont.forEach( (con,index) => { %>
+                        <% logs.forEach( (log,index) => { %>
                             <tr>
                                 <td><%= index+1 %></td>
-                                <td><%= con.tgl.toLocaleDateString('id-ID') %> </td>
-                                <td><%= con.name %> </td>
-                                <td><%= con.jam_masuk %> </td>                    
-                                <td><%= con.jam_keluar %> </td>                    
+                                <td><%= log.name %> </td>
+                                <td><%= log.role %> </td>
+                                <td><%= log.url %> </td>                    
+                                <td><%= log.method %> </td>                    
+                                <td><%= log.tanggal.toLocaleDateString('id-ID') %> </td>
+                                <td><%= log.waktu %> </td>                    
                             </tr>
                         <% }) %>
                     <% } %> 

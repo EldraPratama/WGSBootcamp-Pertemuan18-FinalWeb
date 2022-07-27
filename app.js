@@ -55,27 +55,17 @@ app.use(
 )
 app.use(flash())
 
-app.use((req, res, next) => {
-  
-  let name = 'Anonim'
+app.use( async (req, res, next) => {
+  //membuat log aplikasi
+  let name = 'anonim'
   let role = '-'
-  console.log('Time:', Date.now())
-  // console.log(req.url)
-  // console.log(req.method)
+  // console.log('Time:', Date.now())
+  if (req.session.name) { name = req.session.name }
+  if (req.session.role) { role = req.session.role }
 
-  // if (!req.session.name) {
-  //   console.log(name)
-  // }else{
-  //   name = req.session.name
-  //   console.log(name)
-  // }
-
-  // if (!req.session.role) {
-  //   console.log(role)
-  // }else{
-  //   role = req.session.role
-  //   console.log(req.session.role)
-  // }
+  const log = await pool.query(`INSERT INTO public.log(
+     name, role, url, method, tanggal, waktu)
+    VALUES ('${name}','${role}', '${req.url}', '${req.method}', now(), now())`)
   next()
 })
 
@@ -370,7 +360,9 @@ app.post('/profil', upload.array('image'),
            SET name='${new_name}', phone='${phone}', nik='${nik}' WHERE name='${name}'`)
         }else{
           if (user.rows[0].image != null) {
-            fs.unlinkSync(`./public/upload/${user.rows[0].image}`)
+            if (fs.unlinkSync(`./public/upload/${user.rows[0].image}`)) {
+              fs.unlinkSync(`./public/upload/${user.rows[0].image}`)   
+            }
           }
           const image = req.files[0].filename 
           const newCont = await pool.query(`UPDATE public.user SET name='${new_name}', 
@@ -433,13 +425,13 @@ app.post('/absen',
    
         if (name && id) {
           absen = await pool.query(`SELECT * FROM public.absence where name='${name}' and tgl='now()' and id='${id}'`)         
-          console.log(absen.rows);
-          console.log('pengecekan ke 1');
+          // console.log(absen.rows);
+          // console.log('pengecekan ke 1');
           
         }else{
           absen = await pool.query(`SELECT * FROM public.absence where name='${req.session.name}' and tgl='now()'`)
-          console.log(absen.rows);
-          console.log('pengecekan ke 2');
+          // console.log(absen.rows);
+          // console.log('pengecekan ke 2');
         }
          
         if (absen.rows.length == 0) {
@@ -600,7 +592,7 @@ app.get('/attendance', async (req, res) => {
   //mengambil data dari db lalu mengirimkan datanya ke contact
     const listCont = await pool.query(`SELECT *,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM absence order by tgl desc, jam_masuk desc`)
     const cont = listCont.rows
-    console.log(cont);
+    // console.log(cont);
     res.render('attendance',{ 
       title:'Contact Page',
       cont,
@@ -621,6 +613,7 @@ app.post('/attendance', async (req, res) => {
   }
  
   let {tgl1,tgl2,jam_kerja,jumlah} = req.body
+  let jam = jumlah
 
   if (jumlah!='') {
     if (jumlah>=10) {
@@ -648,7 +641,7 @@ app.post('/attendance', async (req, res) => {
   res.render('attendance',{ 
     title:'Contact Page',
     cont,
-    tgl1,tgl2,jam_kerja,jumlah,
+    tgl1,tgl2,jam_kerja,jumlah,jam,
     msg : req.flash('msg'),
     msg2 : req.flash('msg2'),
     name : req.session.name,
@@ -664,19 +657,17 @@ app.get('/specifik-attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listUser = await pool.query(`SELECT *  FROM public.user`)
-    const users = listUser.rows
-    let cont 
-    console.log(cont);
+    const list = await pool.query(`SELECT *  FROM public.absence`)
+    const cont = list.rows
+    // console.log(cont);
     // console.log(users);
     res.render('specifik-attendance',{ 
-      title:'Contact Page',
-      cont,
-      users,
+      title:'Contact Page', 
       msg : req.flash('msg'),
       msg2 : req.flash('msg2'),
       name : req.session.name,
       role : req.session.role,
+      cont,
    })
 })
 
@@ -688,18 +679,15 @@ app.post('/specifik-attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listUser = await pool.query(`SELECT * FROM public.user`)
-    const listCont = await pool.query(`SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM public.absence where name='${req.body.name}'`)
+    const listCont = await pool.query(`SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM public.absence where name like '%${req.body.name}%'`)
     const cont = listCont.rows
-    const users = listUser.rows
 
     // console.log(cont);
     console.log(cont);
     res.render('specifik-attendance',{ 
       title:'Contact Page',
-      selected: req.body.name,
+      pencarian: req.body.name,
       cont,
-      users,
       msg : req.flash('msg'),
       msg2 : req.flash('msg2'),
       name : req.session.name,
@@ -714,20 +702,44 @@ app.get('/log', async (req, res) => {
   if (req.session.role != 'superadmin') {
     res.redirect('/')
   }
+  const log = await pool.query(`SELECT * FROM public.log order by tanggal desc , waktu desc `)
+  const logs = log.rows
+  // console.log(users);
+  res.render('log',{ 
+    title:'Contact Page',
+    logs,
+    cari : req.body.cari,
+    msg : req.flash('msg'),
+    msg2 : req.flash('msg2'),
+    name : req.session.name,
+    role : req.session.role,
+   })
+})
+
+app.post('/log', async (req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  if (req.session.role != 'superadmin') {
+    res.redirect('/')
+  }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listUser = await pool.query(`SELECT * FROM public.user`)
-    const users = listUser.rows
-    let cont 
-    console.log(cont);
-    // console.log(users);
-    res.render('log',{ 
-      title:'Contact Page',
-      cont,
-      users,
-      msg : req.flash('msg'),
-      msg2 : req.flash('msg2'),
-      name : req.session.name,
-      role : req.session.role,
+  let cari = req.body.cari
+  const log = await pool.query(`SELECT * FROM public.log
+      where name like '%${cari}%' 
+      or role like '%${cari}%' 
+      or url like '%${cari}%'
+      or method like '%${cari}%'
+      order by tanggal desc , waktu desc`)
+  const logs = log.rows
+  // console.log(users);
+  res.render('log',{ 
+    title:'Contact Page',
+    logs,cari,
+    msg : req.flash('msg'),
+    msg2 : req.flash('msg2'),
+    name : req.session.name,
+    role : req.session.role,
    })
 })
 

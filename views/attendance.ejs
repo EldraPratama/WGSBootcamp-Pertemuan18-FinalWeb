@@ -37,7 +37,11 @@
                     <div class="col-md-2">
                         <select class="form-select" aria-label="Default select example" name="jumlah">
                             <% for( let i = 1; i <= 12; i++ ) { %>
+                                <% if (typeof jam !='undefined' && jam == i) { %>
+                                    <option value="<%=i%>" selected><%=i%>  jam</option>
+                                <% }else{ %>
                                     <option value="<%=i%>"><%=i%>  jam</option>
+                                <% } %>
                             <% } %>
                         </select>
                     </div>

@@ -1,19 +1,11 @@
 
   <div class="container">
-    <h1>Attendance for specifik user</h1>
-      <h4>Select user</h4>
+    <h1>Attendance for specific user</h1>
+      <h4>Search user</h4>
         <form method="post" action="/specifik-attendance" >
             <div class="row ">
                 <div class="mb-3 col-md-3 mt-2" >    
-                    <select class="form-select" aria-label="Default select example" name="name">
-                        <% users.forEach(user => { %>  
-                            <% if (typeof selected != 'undefined' && selected == user.name) { %>
-                                <option selected value="<%=user.name%>"><%=user.name%></option>  
-                            <% }else{ %>
-                                <option value="<%=user.name%>"><%=user.name%></option>
-                            <% } %>
-                        <% }) %>
-                    </select>
+                    <input type="text" class="form-control" name="name" value="<%= typeof pencarian!='undefined'?pencarian:''%>">
                 </div>  
                 <div class="col-md-3 mt-2">
                     <button type="submit" class="btn btn-primary d-block"><i class="bi bi-search"></i> Cari</button>
@@ -43,9 +35,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% if (cont == null) { %>
-                        <tr><td colspan="5"><center><b>Silahkan pilih user terlebih dahulu</b></center></td></tr>  
-                    <% }else if (cont.length == 0) { %>
+                    
+                    <% if (cont.length == 0) { %>
                         <tr><td colspan="5"><center><b>Attendance user ini masih kosong</b></center></td></tr>
                     <% }else{ %>  
                         <% cont.forEach( (con,index) => { %>
