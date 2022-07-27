@@ -277,17 +277,8 @@ app.post('/login',
           res.redirect('/login')
         }
       }
+
       
-
-
-
-        // res.render('index',
-        //   {
-        //     title:'Employee absence',
-        //     name : req.session.name,
-        //     role : req.session.role,
-        //     msg  : req.flash('msg'),
-        //   })
       }
     }
 )
@@ -301,6 +292,28 @@ app.get('/logout', (req, res) => {
     }
   })
 
+})
+
+
+app.post('/profil/ganti-password', async(req, res) => {
+    //mulai proses menampilkan detail
+    if(!req.session.name){
+      res.redirect('/login')
+    }
+
+    const employe = await pool.query(`SELECT * FROM public.user WHERE name='${req.session.name}'`)
+    const cont = employe.rows[0]
+
+    //mencocokkan password
+    const cek = await bcrypt.compare(req.body.old_password , employe.rows[0].password)
+    if (cek) {
+      const password = await bcrypt.hash(req.body.new_password,10) 
+      const update = await pool.query(`UPDATE public.user SET password='${password}' WHERE name='${req.session.name}'`)
+      req.flash('msg','Password berhasil diubah')
+    }else{
+      req.flash('msg2','Password gagal diubah')
+    }
+    res.redirect('/profil')
 })
 
 // menampilkan profil employee
@@ -317,7 +330,8 @@ app.get('/profil', async(req, res) => {
       cont,
       name : req.session.name,
       role : req.session.role,
-      msg  : req.flash('msg')
+      msg  : req.flash('msg'),
+      msg2  : req.flash('msg2')
     })
 })
 
@@ -359,10 +373,8 @@ app.post('/profil', upload.array('image'),
           const newCont = await pool.query(`UPDATE public.user
            SET name='${new_name}', phone='${phone}', nik='${nik}' WHERE name='${name}'`)
         }else{
-          if (user.rows[0].image != null) {
-            if (fs.unlinkSync(`./public/upload/${user.rows[0].image}`)) {
-              fs.unlinkSync(`./public/upload/${user.rows[0].image}`)   
-            }
+          if (user.rows[0].image != null) { 
+              fs.unlinkSync(`./public/upload/${user.rows[0].image}`)       
           }
           const image = req.files[0].filename 
           const newCont = await pool.query(`UPDATE public.user SET name='${new_name}', 
@@ -474,7 +486,7 @@ app.get('/employee', async (req, res) => {
     const listCont = await pool.query(`SELECT * FROM public.user where role='user'`)
     const cont = listCont.rows
     // console.log(cont);
-    res.render('contact',{ 
+    res.render('employee',{ 
       title:'Employee Absence',
       cont,
       msg : req.flash('msg'),
@@ -509,6 +521,66 @@ app.get('/employee/:name', async(req, res) => {
   }
 })
 
+// menampilkan detail employee
+app.get('/employee/reset/:name', async(req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  //mengecek ada tidaknya data contact
+  const contact = await findEmployee(req.params.name)
+  if (!contact) {
+    req.flash('msg2',`Nama employee ${req.params.name} tidak tersedia`)
+    res.redirect('/employee')  
+  }else{  
+    //mulai proses menampilkan detail
+    const password = await bcrypt.hash('123',10)
+    const employe = await pool.query(`UPDATE public.user SET password='${password}' WHERE name='${req.params.name}'`)
+    // const cont = employe.rows[0]
+    // console.log(cont);
+    req.flash('msg',`Password employee ${req.params.name} berhasil diubah`)
+    res.redirect('/employee')
+    // res.render('detailContact',{ 
+    //   title:'Employee Absence',
+    //   cont,
+    //   name : req.session.name,
+    //   role : req.session.role,
+    // })
+  }
+})
+
+app.get('/employee/status/:name', async(req, res) => {
+  if(!req.session.name){
+    res.redirect('/login')
+  }
+  //mengecek ada tidaknya data contact
+  const contact = await findEmployee(req.params.name)
+  if (!contact) {
+    req.flash('msg2',`Nama employee ${req.params.name} tidak tersedia`)
+    res.redirect('/employee')  
+  }else{  
+    //mulai mengubah status
+    let status 
+    const employe = await pool.query(`SELECT * FROM public.user WHERE name='${req.params.name}'`)
+    if (employe.rows[0].status=='aktif') {
+        status = 'non-aktif'
+    }else{
+        status = 'aktif'
+    }
+
+    const update = await pool.query(`UPDATE public.user SET status='${status}' WHERE name='${req.params.name}'`)
+    // const cont = employe.rows[0]
+    // console.log(cont);
+    req.flash('msg',`Status employee ${req.params.name} berhasil diubah`)
+    res.redirect('/employee')
+    // res.render('detailContact',{ 
+    //   title:'Employee Absence',
+    //   cont,
+    //   name : req.session.name,
+    //   role : req.session.role,
+    // })
+  }
+})
+
 //input data employee
 app.post('/employee',[
   //validasi input data
@@ -535,8 +607,8 @@ app.post('/employee',[
     }else{
         const name     = req.body.name.toLowerCase()
         const password = await bcrypt.hash(req.body.password,10)
-        const newAbsen = await pool.query(`INSERT INTO public.user (name, username, password, role)
-          VALUES ('${name}','${req.body.username}', '${password}', '${req.body.role}')`)
+        const newAbsen = await pool.query(`INSERT INTO public.user (name, username, password, role,status)
+          VALUES ('${name}','${req.body.username}', '${password}', '${req.body.role}','aktif')`)
      
         req.flash('msg','Data Employee berhasil di Tambah')
         res.redirect('/employee')
@@ -657,7 +729,7 @@ app.get('/specifik-attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const list = await pool.query(`SELECT *  FROM public.absence`)
+    const list = await pool.query(`SELECT *  FROM public.absence order by tgl desc, jam_masuk desc`)
     const cont = list.rows
     // console.log(cont);
     // console.log(users);
@@ -679,7 +751,8 @@ app.post('/specifik-attendance', async (req, res) => {
     res.redirect('/')
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
-    const listCont = await pool.query(`SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja FROM public.absence where name like '%${req.body.name}%'`)
+    const listCont = await pool.query(`SELECT * ,to_char(jam_keluar-jam_masuk::time,'HH24:MI:ss') as jam_kerja 
+                FROM public.absence where name like '%${req.body.name}%' order by tgl desc, jam_masuk desc`)
     const cont = listCont.rows
 
     // console.log(cont);
@@ -709,6 +782,7 @@ app.get('/log', async (req, res) => {
     title:'Contact Page',
     logs,
     cari : req.body.cari,
+    tgl1 : req.body.tgl1,
     msg : req.flash('msg'),
     msg2 : req.flash('msg2'),
     name : req.session.name,
@@ -725,17 +799,29 @@ app.post('/log', async (req, res) => {
   }
   //mengambil data dari db lalu mengirimkan datanya ke contact
   let cari = req.body.cari
-  const log = await pool.query(`SELECT * FROM public.log
-      where name like '%${cari}%' 
+  let tgl1 = req.body.tgl1
+  let log
+  // console.log(cari)
+  // console.log(typeof cari)
+  // console.log(cari=='')
+  if (cari=='') {
+    log = await pool.query(`SELECT * FROM public.log
+      where tanggal >='${tgl1}' and tanggal <='${tgl1}' 
+      order by tanggal desc , waktu desc`)
+  }else{
+    log = await pool.query(`SELECT * FROM public.log
+      where tanggal >='${tgl1}' and tanggal <='${tgl1}' 
+      or name like '%${cari}%' 
       or role like '%${cari}%' 
       or url like '%${cari}%'
       or method like '%${cari}%'
       order by tanggal desc , waktu desc`)
+  }
   const logs = log.rows
   // console.log(users);
   res.render('log',{ 
     title:'Contact Page',
-    logs,cari,
+    logs,cari,tgl1,
     msg : req.flash('msg'),
     msg2 : req.flash('msg2'),
     name : req.session.name,

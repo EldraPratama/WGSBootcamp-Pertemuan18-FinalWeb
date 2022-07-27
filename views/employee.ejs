@@ -20,7 +20,9 @@
                     <tr>
                         <th>No</th>
                         <th>Nama</th>
+                        <th>Username</th>
                         <th>Phone</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -32,17 +34,33 @@
                             <tr>
                                 <td><%= index+1 %></td>
                                 <td><%= con.name %> </td>
+                                <td><%= con.username %> </td>
                                 <td><%= con.phone %> </td>                    
                                 <td>
+                                    <% if (con.status=='aktif') { %>
+                                        <p class="btn btn-success btn-sm"> <%= con.status %></p>
+                                    <% }else{ %>
+                                        <p class="btn btn-danger btn-sm"> <%= con.status %></p>
+                                    <% } %>
+                                </td>                    
+                                <td>
                                     <a href="/employee/<%= con.name %>">
-                                        <span class="badge rounded-pill text-bg-success">detail</span>   
+                                        <span class="badge rounded-pill text-bg-info">detail</span>   
                                     </a>
                                     <a href="/employee/delete/<%= con.name %>">
-                                        <span class="badge rounded-pill text-bg-danger" onclick="return confirm('yakin?');">hapus</span>   
+                                        <span class="badge rounded-pill text-bg-warning" onclick="return confirm('Yakin menghapus employee?');">hapus</span>   
                                     </a>
-                                    <!-- <a href="/contact/edit/<%= con.name %>">
-                                        <span class="badge rounded-pill text-bg-primary">edit</span>   
-                                    </a> -->
+                                    <a href="/employee/reset/<%= con.name %>">
+                                        <span class="badge rounded-pill text-bg-primary" onclick="return confirm('Password akan direset menjadi 123');">reset password</span>   
+                                    </a>
+                                    <a href="/employee/status/<%= con.name %>">
+                                        <% if (con.status=='aktif') { %>
+                                            <span class="badge rounded-pill text-bg-danger" onclick="return confirm('Yakin menonaktifkan employee  ?');">non aktifkan</span>   
+                                        <% }else{ %>
+                                            <span class="badge rounded-pill text-bg-success" onclick="return confirm('Yakin mengaktifkan employee ?');">aktifkan</span>   
+                                        <% } %>
+                                    </a>
+                     
                                 </td>                    
                             </tr>
                         <% }) %>

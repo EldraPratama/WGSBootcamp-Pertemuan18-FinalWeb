@@ -22,6 +22,9 @@
             <% if (msg.length !== 0) { %>
                 <div class="alert alert-success" role="alert"> <%= msg %> </div>
             <% } %>
+            <% if (typeof msg2 !='undefined' && msg2.length !== 0) { %>
+                <div class="alert alert-danger" role="alert"> <%= msg2 %> </div>
+            <% } %>
 
             <form method="post" action="/profil" enctype="multipart/form-data">
                 <legend>Form update profil</legend>
@@ -44,11 +47,30 @@
                         <label class="form-label">Gambar</label>
                         <input type="file" class="form-control" name="image" value="<%= cont.image %>">
                     </div>
-                    <div class="mt-2">
+                    <div class="mt-2 mb-4">
                         <button type="submit" class="btn btn-primary">Update</button>
-                    </div>
-                    
+                    </div> 
             </form>
+
+            <form method="post" action="/profil/ganti-password">
+                <legend >Form Ganti password</legend>
+                    <div class="mb-2">
+                        <input type="text" class="form-control" name="name" value="<%= cont.name %>" hidden>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleInputPassword1" class="form-label">Password Sebelumnya</label>
+                        <input type="password" class="form-control" name="old_password" required>
+                    </div> 
+                    <div class="mb-3">
+                        <label for="exampleInputPassword1" class="form-label">Password Baru</label>
+                        <input type="password" class="form-control" name="new_password" required>
+                    </div> 
+                    <div class="mt-2 mb-6">
+                        <button type="submit" class="btn btn-primary">Ganti password</button>
+                    </div>
+                    <p class="mt-4"></p>
+            </form>
+            
         </div>
     </div>
 </div>
