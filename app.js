@@ -810,11 +810,14 @@ app.post('/log', async (req, res) => {
       order by tanggal desc , waktu desc`)
   }else{
     log = await pool.query(`SELECT * FROM public.log
-      where tanggal >='${tgl1}' and tanggal <='${tgl1}' 
-      or name like '%${cari}%' 
+      where 
+      ( tanggal >='${tgl1}' and tanggal <='${tgl1}')
+      and 
+      ( name like '%${cari}%' 
       or role like '%${cari}%' 
       or url like '%${cari}%'
       or method like '%${cari}%'
+      )
       order by tanggal desc , waktu desc`)
   }
   const logs = log.rows
